@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * After any change to the file from outside the editor, the editor wrote the file back in its own formatting about 200 ms later, marking it modified. Outside changes are no longer echoed.
 * An outside change reset the cursor and scroll position; both are now kept, and an identical update no longer rebuilds the view.
 
+### Fixed after review
+* The extension now activates for any workspace containing Markdown, so links are updated on rename, and `[[` completion and clickable wikilinks work in the text editor, without first opening a note in Vellum.
+* The link to open Claude Code is built so that a prompt containing `&`, `+` or `%` arrives intact; prompts too long for a link stay on the clipboard.
+* A renamed note with unsaved link edits is indexed from the open document, not the stale file.
+* A wikilink with shown text inside a table is saved with its pipe escaped.
+* Following a link creates the note only when the file is known to be missing.
+
 ### Not yet verified
 * Delivery to Claude Code (the text editor opening beside, the @-mention command lookup, the `vscode://anthropic.claude-code/open` link) is built from Claude Code's documentation and has not been run against the extension. Selection mapping and reload behaviour were checked in a browser.
 

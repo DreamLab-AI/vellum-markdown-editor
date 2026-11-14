@@ -145,7 +145,7 @@ Not yet published to the VS Code Marketplace; [PUBLISHING.md](PUBLISHING.md) has
 
 The editor itself (rendering, diagrams, wikilinks, selection mapping, reloading after an outside
 edit) is tested in Chromium under the shipped content security policy, and the logic behind
-links, renames and references by 48 unit tests. The parts that need VS Code itself (the
+links, renames and references by 51 unit tests. The parts that need VS Code itself (the
 Backlinks panel, rename handling and delivery to Claude Code) are tested against a stand-in for
 the VS Code API and are listed under "Not yet verified" in the [changelog](CHANGELOG.md) until
 they have been confirmed in VS Code. Please report anything that misbehaves.
@@ -156,7 +156,7 @@ Requires Node 20 or later.
 
 ```sh
 npm ci --ignore-scripts      # install scripts are not needed to build
-npm run test:unit            # 48 tests
+npm run test:unit            # 51 tests
 npm run package              # verifies the pinned assets, then bundles into dist/
 npx @vscode/vsce package     # produces a .vsix
 code --install-extension vellum-markdown-editor-*.vsix

@@ -132,8 +132,13 @@ export function setupMessageListener() {
             const cut = before === '[[' ? 2 : before.endsWith('[') ? 1 : 0;
             const [part] = splitWikilinks(message.text);
             if (part && typeof part !== 'string') {
-              const node = view.state.schema.nodes.wikilink.create(part);
-              view.dispatch(view.state.tr.replaceWith(from - cut, from, node).scrollIntoView());
+              try {
+                const node = view.state.schema.nodes.wikilink.create(part);
+                view.dispatch(view.state.tr.replaceWith(from - cut, from, node).scrollIntoView());
+              } catch {
+                // Not a place a link can go (a code block): insert it as text.
+                view.dispatch(view.state.tr.insertText(message.text, from - cut, from));
+              }
               view.focus();
             }
           });

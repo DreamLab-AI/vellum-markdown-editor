@@ -87,6 +87,13 @@ export class LinkIndex implements vscode.Disposable {
 
   private async loadFromDisk(uri: vscode.Uri, quiet = false): Promise<void> {
     if (!this.isNote(uri)) return;
+    // An open document is the truth for its file: after a rename its link
+    // edits may still be unsaved, and the disk copy would be stale.
+    const open = vscode.workspace.textDocuments.find((d) => d.uri.toString() === uri.toString());
+    if (open) {
+      this.set(uri, open.getText(), quiet);
+      return;
+    }
     try {
       const bytes = await vscode.workspace.fs.readFile(uri);
       if (bytes.byteLength > MAX_NOTE_BYTES) return;

@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 import { activeNote } from '../links/backlinksView';
 import type { LinkIndex } from '../links/linkIndex';
 import {
-  buildLinkContext, chooseTarget, claudeOpenUri, CLAUDE_EXTENSION_ID, formatReference, locateLines, SelectionInfo,
+  buildLinkContext, chooseTarget, claudeOpenParts, CLAUDE_EXTENSION_ID, MAX_LINK_PROMPT, formatReference, locateLines, SelectionInfo,
 } from './reference';
 
 const MAX_TEXT = 200_000;
@@ -65,8 +65,13 @@ export async function copyReference(document: vscode.TextDocument, info: Selecti
   vscode.window.setStatusBarMessage(`Copied ${reference}`, 4000);
 }
 
-async function openInClaude(prompt: string): Promise<void> {
-  await vscode.env.openExternal(vscode.Uri.parse(claudeOpenUri(prompt), true));
+/** Returns false when the prompt is too long for a link; it is on the clipboard either way. */
+async function openInClaude(prompt: string): Promise<boolean> {
+  if (prompt.length > MAX_LINK_PROMPT) {
+    void vscode.window.showInformationMessage('That is too long to pre-fill. It is on the clipboard: paste it into Claude Code.');
+    return false;
+  }
+  return vscode.env.openExternal(vscode.Uri.from(claudeOpenParts(prompt)));
 }
 
 const hasClaude = () => !!vscode.extensions.getExtension(CLAUDE_EXTENSION_ID);

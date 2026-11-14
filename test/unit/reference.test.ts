@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  buildLinkContext, chooseTarget, clampPosition, claudeOpenUri, endOfPrefix, fingerprint, formatReference, locateLines,
+  buildLinkContext, chooseTarget, clampPosition, claudeOpenParts, claudeOpenUri, escapeWikilinkPipesInTables, endOfPrefix, fingerprint, formatReference, locateLines,
 } from '../../src/ai/reference';
 
 test('formatReference matches the form Claude Code documents (@app.ts#5-10)', () => {
@@ -99,4 +99,21 @@ test('end to end: selections reported by the editor resolve to the true source l
   assert.deepEqual(at(16, 17, 'thequickbrownfox', 'jumpsoverthelazydog'), { start: 18, end: 19 });
   assert.deepEqual(at(99, 99, 'lastlineofthenote', 'lastlineofthenote'), { start: 101, end: 101 });
   assert.equal(formatReference('notes/Harness.md', at(16, 17, 'thequickbrownfox', 'jumpsoverthelazydog')), '@notes/Harness.md#18-19');
+});
+
+test('claudeOpenParts keeps the prompt as one encoded query value, whatever it contains', () => {
+  const prompt = 'see @R&D/100% plan+notes.md#1-2; then a=b';
+  const parts = claudeOpenParts(prompt);
+  assert.deepEqual([parts.scheme, parts.authority, parts.path], ['vscode', 'anthropic.claude-code', '/open']);
+  assert.ok(!/[&+;# ]/.test(parts.query.slice('prompt='.length)), 'nothing that could split or re-decode the value');
+  assert.equal(new URLSearchParams(parts.query).get('prompt'), prompt);
+});
+
+test('wikilink pipes are escaped inside table rows only, and only once', () => {
+  const md = ['Text [[A|a]] stays.', '| [[A|a]] | [[B]] | [[C#h|c]] |', '|---|---|---|', '| [[D\\|d]] | x | y |'].join('\n');
+  const out = escapeWikilinkPipesInTables(md).split('\n');
+  assert.equal(out[0], 'Text [[A|a]] stays.');
+  assert.equal(out[1], '| [[A\\|a]] | [[B]] | [[C#h\\|c]] |');
+  assert.equal(out[3], '| [[D\\|d]] | x | y |');
+  assert.equal(escapeWikilinkPipesInTables(out.join('\n')), out.join('\n'), 'idempotent');
 });

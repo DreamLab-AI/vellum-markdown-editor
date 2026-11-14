@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { files, Uri } from '../stubs/vscode';
+import { files, Uri, workspace } from '../stubs/vscode';
 import { LinkIndex } from '../../src/links/linkIndex';
 
 async function vault(contents: Record<string, string>) {
@@ -74,4 +74,16 @@ test('a rename that breaks nothing returns no edit', async () => {
   assert.equal(index.renameEdit([{ oldUri: u('C.md'), newUri: u('D.md') }]), undefined);
   assert.equal(index.renameEdit([{ oldUri: u('pic.png'), newUri: u('pic2.png') }]), undefined);
   index.dispose();
+});
+
+test('an open document is indexed in place of a stale file on disk', async () => {
+  workspace.textDocuments = [{ uri: u('A.md'), getText: () => '[[New]] (unsaved edit)' }];
+  try {
+    const index = await vault({ 'A.md': '[[Old]] (on disk)', 'New.md': '', 'Old.md': '' });
+    assert.deepEqual(index.backlinks(u('New.md')).map((b) => b.sourcePath), ['A.md']);
+    assert.deepEqual(index.backlinks(u('Old.md')), []);
+    index.dispose();
+  } finally {
+    workspace.textDocuments = [];
+  }
 });

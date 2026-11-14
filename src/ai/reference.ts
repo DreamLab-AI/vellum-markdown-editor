@@ -86,9 +86,36 @@ export function buildLinkContext(input: LinkContextInput, limit = 40): string {
 
 export const CLAUDE_EXTENSION_ID = 'anthropic.claude-code';
 
-/** Opens a new Claude Code tab with the prompt pre-filled (not submitted). */
+/**
+ * The parts of the link that opens a new Claude Code tab with the prompt
+ * pre-filled (not submitted). The query is encoded here and must be handed to
+ * `vscode.Uri.from` as-is: VS Code decodes a URI's query once on the way in,
+ * so parsing the finished string instead would strip this encoding and a
+ * prompt containing `&`, `+` or `%` would be split or garbled.
+ */
+export function claudeOpenParts(prompt: string): { scheme: string; authority: string; path: string; query: string } {
+  return { scheme: 'vscode', authority: CLAUDE_EXTENSION_ID, path: '/open', query: `prompt=${encodeURIComponent(prompt)}` };
+}
+
+/** The same link as text, as Claude Code documents it (for display and tests). */
 export function claudeOpenUri(prompt: string): string {
-  return `vscode://${CLAUDE_EXTENSION_ID}/open?prompt=${encodeURIComponent(prompt)}`;
+  const p = claudeOpenParts(prompt);
+  return `${p.scheme}://${p.authority}${p.path}?${p.query}`;
+}
+
+/** Longest prompt sent through a link; longer ones stay on the clipboard. */
+export const MAX_LINK_PROMPT = 6000;
+
+/**
+ * Inside a table row a wikilink's pipe must be written `\|`, or it splits the
+ * cell. Escapes the unescaped ones; leaves everything else alone.
+ */
+export function escapeWikilinkPipesInTables(markdown: string): string {
+  if (!markdown.includes('[[')) return markdown;
+  return markdown
+    .split('\n')
+    .map((line) => (/^\s*\|/.test(line) ? line.replace(/\[\[[^\[\]\n]*\]\]/g, (link) => link.replace(/(?<!\\)\|/g, '\\|')) : line))
+    .join('\n');
 }
 
 export type AiTarget = 'claude' | 'antigravity' | 'chat' | 'clipboard';

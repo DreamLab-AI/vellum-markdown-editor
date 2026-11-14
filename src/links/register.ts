@@ -43,7 +43,13 @@ export async function followWikilink(index: LinkIndex, source: vscode.Uri, targe
   if (vscode.workspace.getWorkspaceFolder(uri)?.uri.toString() !== folder.uri.toString()) return;
   try {
     await vscode.workspace.fs.stat(uri);
-  } catch {
+  } catch (err) {
+    // Only a file that is known to be missing is created; any other failure
+    // (permissions, a provider error) must not lead to an overwrite.
+    if (!(err instanceof vscode.FileSystemError) || err.code !== 'FileNotFound') {
+      void vscode.window.showWarningMessage(`Could not check whether "${name}" exists.`);
+      return;
+    }
     await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(uri, '..'));
     await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(`# ${baseName(name)}\n\n`));
   }

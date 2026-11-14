@@ -1,3 +1,4 @@
+import { escapeWikilinkPipesInTables } from '../../src/ai/reference';
 import {
   Editor,
   rootCtx,
@@ -78,6 +79,8 @@ export async function initMilkdown(initialText: string) {
           let cleanedMarkdown = markdownToRender
             .replace(/\\([!\[\]()_])/g, '$1') // Remove backslash escapes before image/link chars and underscores
             .replace(/<([^>]+:\/\/[^>]+)>/g, '$1'); // Remove angle brackets around URLs
+
+          cleanedMarkdown = escapeWikilinkPipesInTables(cleanedMarkdown);
 
           state.lastMarkdown = cleanedMarkdown;
 

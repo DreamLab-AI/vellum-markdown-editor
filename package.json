@@ -40,7 +40,11 @@
     "Linters"
   ],
   "browser": "./dist/extension.js",
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:markdown",
+    "workspaceContains:**/*.md",
+    "workspaceContains:**/*.markdown"
+  ],
   "contributes": {
     "customEditors": [
       {
