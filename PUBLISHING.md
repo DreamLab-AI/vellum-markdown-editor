@@ -19,7 +19,12 @@ stored anywhere. Microsoft retires global Azure DevOps personal access tokens on
    - Environment: `marketplace`
 3. **Create the `marketplace` environment** in the GitHub repository
    (Settings → Environments). Add yourself as a required reviewer so every publish needs an
-   approval click.
+   approval click. Allow the `main` branch and `v*` tags under deployment branches and tags.
+
+For a first release without automation, build the VSIX as described below, open the
+publisher's management page, choose **New extension → Visual Studio Code**, and upload
+the `.vsix`. This uses your Microsoft sign-in and does not require a PAT. Keep the same
+publisher ID for subsequent automated releases.
 
 ## Releasing
 
@@ -42,15 +47,44 @@ npx @vscode/vsce package`, then install the `.vsix` with
 The Marketplace does not use the website for publishing. The website matters only for the
 **verified publisher** tick:
 
-- Eligibility: an extension on the Marketplace for at least six months, and a domain registered
-  for at least six months.
-- In the publisher's **Details** tab, enter `https://dreamlab-ai.com` as the verified domain.
-  The Marketplace shows a **TXT record**; add it to the DNS zone for `dreamlab-ai.com` at the
-  DNS host, then choose Verify. Nothing is deployed to the website for this.
-- Microsoft then reviews the publisher, which includes looking at the website. A page for
-  Vellum on dreamlab-ai.com that links to the repository and the Marketplace listing helps.
+Microsoft's [publisher verification instructions](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#verify-a-publisher)
+require at least one extension on the Marketplace for six months and a domain registration
+at least six months old. Microsoft explicitly asks publishers to wait until both conditions
+are met before applying. Creating a publisher, pushing a GitHub release or setting a homepage
+does not start the extension's six-month period: the extension must be on the Marketplace.
 
-So: publish now, and apply for the badge six months after the first release.
+Use `https://dreamlab-ai.com` consistently as the publisher's website and eventual verified
+domain. The extension manifest already links there. The domain must be an apex domain,
+use HTTPS, respond with HTTP 200 to a HEAD request, and have DNS settings you control.
+The `dreamlab-ai-website` repository serves the website; Microsoft's ownership proof is a
+DNS TXT record, not a file, meta tag or deployment in that repository.
+
+Once eligible:
+
+1. Open the `dreamlab-ai` publisher's **Details** tab. Under **Verified domain**, enter
+   `https://dreamlab-ai.com`, then **Save → Verify**.
+2. Copy the exact TXT record name and value Microsoft supplies into the domain's DNS zone.
+   Keep existing TXT records. Do not invent a token or use GitHub Pages' verification token.
+3. Select **Verify** in the dialog after the record has propagated.
+4. Microsoft reviews the domain, website, extensions and publisher reputation, normally
+   reporting the result within five business days. Six months makes the publisher eligible;
+   it does not award the badge automatically.
+
+Choose a stable publisher display name, such as **DreamLab AI**: changing it after verification
+revokes the badge. Keep the domain registered and the website available.
+
+### Readiness checks on 14 November 2026
+
+- GitHub's `marketplace` environment is configured with `jjohare` as required reviewer,
+  allowing the `main` branch and `v*` tags. The Marketplace publisher and Trusted Publishing
+  policy still need to be confirmed in the Microsoft account.
+- [Verisign RDAP](https://rdap.verisign.com/com/v1/domain/dreamlab-ai.com) records domain
+  registration on **30 June 2025**, so the domain-age requirement is already met.
+- `curl -I https://dreamlab-ai.com` returned **HTTP 200** over HTTPS.
+- Domain ownership through DNS and Marketplace publication have **not** been verified by
+  these checks. Record the first successful Marketplace publication date after the listing
+  is live. If that date is **14 November 2026**, the earliest application date is
+  **14 May 2027**. Recalculate if publication happens later.
 
 ## Before the first publish
 

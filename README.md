@@ -11,8 +11,12 @@
 [![VS Code](https://img.shields.io/badge/VS_Code-1.85%2B-007acc)](package.json)
 [![GitHub stars](https://img.shields.io/github/stars/DreamLab-AI/vellum-markdown-editor?style=social)](https://github.com/DreamLab-AI/vellum-markdown-editor)
 
-Maintained by [DreamLab AI](https://www.dreamlab-ai.com/) and
+Maintained by [DreamLab AI](https://dreamlab-ai.com/) and
 [John O’Hare](https://github.com/jjohare).
+
+The Marketplace publisher ID is `dreamlab-ai`, with [dreamlab-ai.com](https://dreamlab-ai.com/)
+as its homepage. Domain verification is a separate Microsoft review; see
+[publishing and verification](PUBLISHING.md).
 
 [Visual walkthrough](docs/WALKTHROUGH.md) · [Feature test report](docs/TESTING.md) ·
 [Changelog](CHANGELOG.md) · [Report an issue](https://github.com/DreamLab-AI/vellum-markdown-editor/issues)

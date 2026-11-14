@@ -140,3 +140,4 @@ dist
 .pnp.*
 
 .test-out/
+.agentic-qe/

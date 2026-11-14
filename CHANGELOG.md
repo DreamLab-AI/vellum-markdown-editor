@@ -12,12 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `AGENTS.md` (and a `CLAUDE.md` that imports it): a briefing for coding agents on the repository and on reaching Vellum's features.
 
 ### Documentation and branding
+* Link the extension homepage to dreamlab-ai.com and document Microsoft's DNS verification process and six-month eligibility requirements.
 * Replace the inherited extension icon with an original folded-vellum V mark; add it to the README with DreamLab AI, CI, version, licence, VS Code, and GitHub badges.
 * Add a screenshot walkthrough, disposable demo workspace, and desktop feature test report for 0.4.0.
 * Confirm desktop editing/saving, backlinks and mention linking, missing-note creation, file-rename link updates, templates, selection reference/reveal, link context, and outside-edit reload behaviour in VS Code 1.106.3 on Linux. See `docs/TESTING.md` for evidence and remaining gaps.
 * Confirm one-page A4 export without page errors; record the remaining dark-theme print contrast issue and the native clipboard limitation.
 
 ### Fixed
+* Exclude local agent state and signing keys (`.agentic-qe/`) from Git and VSIX packages.
 * CLI renames now reject moving a folder inside itself before rewriting links, refuse to overwrite dangling symlinks, and use the same normalised paths for planning and applying a rename. Add five CLI integration tests for queries, dry runs, successful moves, and rejected moves.
 * Remove a duplicate `markdown-live.refreshSidebar` registration that prevented extension activation in VS Code.
 * Wait for Milkdown to initialise before requesting document content, replacing the fixed 500 ms startup delay. Suppress edits from the empty initial editor so it cannot overwrite the document during startup.
