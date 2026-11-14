@@ -1,9 +1,22 @@
 # Changelog
 
-All notable changes to the "obsidian-markdown-live-editor" extension will be documented in this file.
+All notable changes to Vellum Markdown Editor are documented here, followed by upstream history.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## Unreleased
+
+### Fixed
+* Remove a duplicate `markdown-live.refreshSidebar` registration that prevented extension activation in VS Code.
+* Wait for Milkdown to initialise before requesting document content, replacing the fixed 500 ms startup delay. Suppress edits from the empty initial editor so it cannot overwrite the document during startup.
+* Remove both inline and external webview scripts from the standalone print preview before adding the bundled Paged.js script.
+* Insert print-preview assets with a replacement callback so dollar-sign replacement tokens in JavaScript are preserved literally rather than expanded.
+
+### Validation
+* Installed the packaged VSIX in VS Code 1.106.3 on Linux; exercised editing and saving, source mode, diagrams, maths, tables, the notes sidebar, and image paste.
+* Generated a one-page A4 PDF from the exported preview in headless Chromium, with no JavaScript errors. Print colours still need polish for dark editor themes.
+* All 15 unit tests pass; both bundled asset digests verify and VSIX packaging succeeds.
 
 ## v0.2.0 — Vellum Markdown Editor (2026-11-14)
 

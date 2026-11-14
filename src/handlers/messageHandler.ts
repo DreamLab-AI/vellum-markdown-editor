@@ -73,6 +73,7 @@ export async function handleWebviewMessage(
         }
         case 'webviewReady':
           provider.isUpdatingFromWebview = false;
+          webviewPanel.webview.postMessage({ type: 'update', text: document.getText() });
           break;
         case 'edit':
           provider.isUpdatingFromWebview = true;
@@ -502,7 +503,7 @@ export async function handleWebviewMessage(
             // script tag, neither of which applies to a standalone file.
             modifiedHtml = modifiedHtml
               .replace(/<meta[^>]+http-equiv="Content-Security-Policy"[^>]*>/i, '')
-              .replace(/<script\b[^>]*\bsrc="[^"]*"[^>]*>\s*<\/script>/gi, '');
+              .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
             const fontRule = printFontFamily ? `font-family: ${printFontFamily} !important;` : '';
             const injection = `
               ${pagedScript}
@@ -531,7 +532,7 @@ export async function handleWebviewMessage(
               </style>
             `;
             
-            modifiedHtml = modifiedHtml.replace('</head>', injection + '\n</head>');
+            modifiedHtml = modifiedHtml.replace('</head>', () => injection + '\n</head>');
 
             const encoder = new TextEncoder();
             const htmlData = encoder.encode(modifiedHtml);

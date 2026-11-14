@@ -49,10 +49,20 @@ honoured.
 
 ## Status
 
-This is a source release. It is **not published to the VS Code Marketplace**, and the extension
-host side has not yet been exercised inside VS Code: the editor bundle was tested in Chromium
-under the shipped policy, and the helpers by unit tests. Try the sidebar, a PDF export and an
-image paste before relying on it.
+This is a source release, **not published to the VS Code Marketplace**. A locally packaged
+VSIX was installed and exercised in VS Code 1.106.3 on Linux on 14 November 2026. Testing
+found and fixed duplicate command registration, a startup content-loading race, and broken
+script insertion in the print preview. See [CHANGELOG.md](CHANGELOG.md).
+
+Verified in VS Code: rendered Markdown, editing and saving to disk, source mode, a Pele
+flowchart, maths, tables, the notes sidebar, and image paste with a saved, loaded local image.
+The generated print preview was also checked in headless Chromium: pagination completed
+without JavaScript errors and produced a one-page A4 PDF. Print colours still need polish;
+the dark editor theme can produce faint text on a white page.
+
+These are smoke checks, not a complete compatibility test. macOS, Windows, remote
+workspaces, AI context, templates, image renaming and the interactive browser print dialog
+were not exercised in this pass.
 
 ## Build and install
 
@@ -69,6 +79,9 @@ code --install-extension vellum-markdown-editor-*.vsix
 `npm run package` fails if Pele or Paged.js does not match its pinned SHA-256
 (`scripts/verify-pins.mjs`).
 
+After replacing an installed build, run **Developer: Reload Window** from the Command
+Palette. To reinstall the same version, add `--force` to `code --install-extension`.
+
 Vellum keeps upstream's command and setting identifiers (`markdown-live.*`, `markdownLive.*`),
 so existing settings and keybindings carry over. For the same reason, **do not install it
 alongside the upstream extension**: the two would register the same commands and editor.
@@ -80,6 +93,14 @@ Open a `.md` file, then any of:
 1. `Ctrl + Alt + Shift + M` (`Cmd + Ctrl + Shift + M` on macOS).
 2. Right-click the file in the Explorer and choose **Open in Markdown Live Editor**.
 3. Click the pencil icon at the top right of the text editor.
+
+For a quick smoke check, use a disposable folder with two Markdown notes. Include YAML
+front matter, formatted text, a task list, a table, inline maths and a fenced `mermaid`
+flowchart. Confirm that content loads on opening; edit and save, then inspect the file on
+disk. Toggle source mode, open **Markdown Live: Focus on Notes View**, and paste an image
+to check that it is written under `assets/images` and displayed. Click **Export PDF** to
+generate `.vscode/print-preview.html`, open it in your browser and use **Ctrl+P** (macOS:
+**Cmd+P**) to print or save as PDF. The preview file remains on disk.
 
 | Command | macOS | Windows and Linux |
 |---|---|---|

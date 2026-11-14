@@ -43,8 +43,26 @@ remains.
   workspace when clicked.
 - Upstream does not type-check (`tsc` reports errors that predate this fork); the build uses
   esbuild only. This fork reduced the count from 24 to 16 and added none.
-- The extension itself was **not run inside VS Code** for this review. The webview bundle was
-  exercised in Chromium under the shipped policy with a stand-in for the host.
+- The initial security review used Chromium with a stand-in for the host. A subsequent
+  smoke test exercised the installed extension in VS Code; see the follow-up below.
+
+## VS Code follow-up (2026-11-14)
+
+A packaged VSIX was installed in VS Code 1.106.3 on Linux. Testing exposed a duplicate
+sidebar command registration that failed activation, and a document-loading race caused by
+the fixed startup delay. The duplicate is removed; initial content is now sent after
+Milkdown signals readiness, with empty-editor changes suppressed during initialisation.
+
+Print-preview testing also found that the bundled Paged.js source was corrupted by
+`String.replace` replacement-token expansion. A callback now inserts the source literally.
+The exported HTML has all webview script elements removed, including the injected VS Code
+API bootstrap, before the trusted bundled Paged.js script is added.
+
+The VS Code checks covered editing and saving, source mode, diagrams, maths, tables, the
+notes sidebar and image paste. The exported preview paginated without JavaScript errors
+in headless Chromium and produced a one-page A4 PDF. Dark-theme print contrast still needs
+work. These functional checks do not extend the security review to all commands, platforms
+or remote workspaces.
 
 ## Diagrams: Mermaid syntax, rendered by Pele
 

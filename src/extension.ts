@@ -78,9 +78,6 @@ export function activate(context: vscode.ExtensionContext) {
     }),
     vscode.commands.registerCommand('markdown-live.newNoteFromTemplate', () => {
       NoteManager.createNewNoteFromTemplate().then(() => sidebarProvider.refresh());
-    }),
-    vscode.commands.registerCommand('markdown-live.refreshSidebar', () => {
-      sidebarProvider.refresh();
     })
   );
 }

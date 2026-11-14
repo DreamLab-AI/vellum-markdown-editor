@@ -8,9 +8,9 @@ import './ui/bookmark.css';
 import { initMilkdown } from './editor/milkdown';
 import { setupMessageListener } from './communication';
 import { setupUIEvents } from './ui/events';
-import { vscode } from './state';
+import { state, vscode } from './state';
 
-function initWebview() {
+async function initWebview() {
   window.addEventListener('error', (event) => {
     console.error('Webview Error:', event.error);
     if (vscode) {
@@ -31,16 +31,14 @@ function initWebview() {
     }
   });
 
-  // Load configuration and indicate readiness
-  if (vscode) {
-    vscode.postMessage({ type: 'ready' });
-  }
-
-  // Khởi tạo Milkdown
-  initMilkdown('');
-
   // Lắng nghe messages từ extension
   setupMessageListener();
+
+  // Do not sync the empty initial editor back to the document.
+  state.isUpdatingFromVSCode = true;
+  await initMilkdown('');
+  state.isUpdatingFromVSCode = false;
+  vscode?.postMessage({ type: 'webviewReady' });
 
   // Đăng ký toàn bộ event listeners cho UI
   setupUIEvents();
