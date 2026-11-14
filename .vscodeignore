@@ -16,3 +16,4 @@ webpack.config.js
 .test-out/**
 scripts/**
 README.upstream.md
+assets/previews/**

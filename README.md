@@ -8,6 +8,26 @@ Vellum is a modified version of
 [**Obsidian-style Markdown Live Editor**](https://github.com/thinh-vu/vscode-markdown-editor)
 by Thinh Vu, released under the same licence, GPL-3.0. See [Attribution](#attribution-and-licence).
 
+## Preview
+
+The live editor and notes sidebar in VS Code, with task lists, a table, a Pele-rendered
+flowchart and inline maths:
+
+![Vellum running in VS Code: notes sidebar beside a rendered project notebook with tasks, a table, a flowchart and maths.](assets/previews/live-editor.png)
+
+<details>
+<summary>See the same note in source mode</summary>
+
+Switch between rendered Markdown and the built-in CodeMirror source editor using the
+**Toggle Source Mode** button in the toolbar.
+
+![Vellum source mode in VS Code, showing the Markdown behind the project notebook, including its Mermaid diagram.](assets/previews/source-editor.png)
+
+</details>
+
+These screenshots show the installed extension on Linux. Open the
+[example note](assets/previews/demo.md) to try the same content.
+
 ## What it does
 
 - **Live editing.** Edit rendered Markdown directly (Milkdown), or switch to a source view
