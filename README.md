@@ -57,6 +57,12 @@ open the same source lines beside Vellum.
 
 </details>
 
+The installed 0.4.0 extension opening an existing Obsidian knowledge vault in VS Code.
+The `Metaverse Entity Schema Archive.md` note contains a fenced `mermaid` class diagram,
+rendered here by Pele 1.12.0:
+
+![Vellum in the knowledge vault: the Explorer beside a Pele-rendered Mermaid class diagram showing metaverse entities, agents, scenes, assets, and their relationships.](docs/images/09-pele-knowledge-vault.png)
+
 ## What it does
 
 - **Live editing.** Edit rendered Markdown directly (Milkdown), or switch to a source view
