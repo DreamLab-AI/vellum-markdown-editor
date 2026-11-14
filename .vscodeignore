@@ -17,3 +17,7 @@ webpack.config.js
 scripts/**
 README.upstream.md
 assets/previews/**
+test/**
+webview-test.js
+tsconfig.test.json
+eslint.config.mjs
