@@ -100,7 +100,7 @@ is in `package.json`. Run it directly from `node_modules/.bin` if needed.
 
 ```sh
 npm ci --ignore-scripts   # install scripts are not needed
-npm run test:unit         # esbuild bundles test/unit/*.test.ts, then node --test (58 tests)
+npm run test:unit         # esbuild bundles test/unit/*.test.ts, then node --test (63 tests)
 npm run package           # verify pins, bundle webview and extension into dist/
 npx @vscode/vsce package  # .vsix
 ```

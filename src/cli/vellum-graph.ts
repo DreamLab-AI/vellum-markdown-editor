@@ -6,6 +6,7 @@
 //   npm run graph -- <command> [args] [--root DIR] [--json]
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   readdirSync,
   readFileSync,
@@ -13,7 +14,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join, resolve as resolvePath } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve as resolvePath, sep } from 'node:path';
 import { formatReference } from '../ai/reference';
 import { baseName, type LinkEdit } from '../links/resolver';
 import { applyEdits, Vault } from '../links/vault';
@@ -81,6 +82,11 @@ function parseArgs(argv: string[]): Args | 'help' {
     else out.positional.push(a);
   }
   if (!out.command) return 'help';
+  if (out.command === 'rename') {
+    out.positional = out.positional.map((p) =>
+      p.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/+$/, ''),
+    );
+  }
   return out;
 }
 
@@ -244,15 +250,26 @@ function run(args: Args, vault: Vault): { json: unknown; text: string } {
 function applyRename(root: string, from: string, to: string, edits: LinkEdit[]): void {
   const src = resolvePath(root, from);
   const dst = resolvePath(root, to);
-  if (!dst.startsWith(resolvePath(root) + '/')) throw new UsageError(`"${to}" is outside the root`);
-  if (existsSync(dst)) throw new UsageError(`"${to}" already exists`);
+  for (const [name, path] of [
+    [from, src],
+    [to, dst],
+  ]) {
+    const rel = relative(root, path);
+    if (!rel || rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel))
+      throw new UsageError(`"${name}" is outside the root or names the root itself`);
+  }
+  // Reject predictable move failures before writing any link edits. lstat also
+  // catches a dangling symlink, which existsSync would allow us to overwrite.
+  if (lstatSync(dst, { throwIfNoEntry: false })) throw new UsageError(`"${to}" already exists`);
+  if (statSync(src).isDirectory() && dst.startsWith(`${src}${sep}`))
+    throw new UsageError(`cannot move "${from}" inside itself`);
+  mkdirSync(dirname(dst), { recursive: true });
   const byNote = new Map<string, LinkEdit[]>();
   for (const e of edits) byNote.set(e.path, [...(byNote.get(e.path) ?? []), e]);
   for (const [note, list] of byNote) {
     const abs = join(root, note);
     writeFileSync(abs, applyEdits(readFileSync(abs, 'utf8'), list));
   }
-  mkdirSync(dirname(dst), { recursive: true });
   renameSync(src, dst);
 }
 

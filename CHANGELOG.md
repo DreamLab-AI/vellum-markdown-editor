@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * **`vellum-graph`** (`npm run graph -- <command>`): the link graph from a terminal, for Claude Code, other agents and scripts that cannot query the running extension. Backlinks, outgoing links, unlinked mentions, unresolved links, link context, resolution, edges, orphans, and rename planning, with `--apply` to rewrite links and move a note or folder outside VS Code. It reuses the extension's parser and resolver through a new VS Code-free `Vault` (`src/links/vault.ts`). Not part of the VSIX.
 * `AGENTS.md` (and a `CLAUDE.md` that imports it): a briefing for coding agents on the repository and on reaching Vellum's features.
 
+### Documentation and branding
+* Replace the inherited extension icon with an original folded-vellum V mark; add it to the README with DreamLab AI, CI, version, licence, VS Code, and GitHub badges.
+* Add a screenshot walkthrough, disposable demo workspace, and desktop feature test report for 0.4.0.
+* Confirm desktop editing/saving, backlinks and mention linking, missing-note creation, file-rename link updates, templates, selection reference/reveal, link context, and outside-edit reload behaviour in VS Code 1.106.3 on Linux. See `docs/TESTING.md` for evidence and remaining gaps.
+* Confirm one-page A4 export without page errors; record the remaining dark-theme print contrast issue and the native clipboard limitation.
+
+### Fixed
+* CLI renames now reject moving a folder inside itself before rewriting links, refuse to overwrite dangling symlinks, and use the same normalised paths for planning and applying a rename. Add five CLI integration tests for queries, dry runs, successful moves, and rejected moves.
+* Remove a duplicate `markdown-live.refreshSidebar` registration that prevented extension activation in VS Code.
+* Wait for Milkdown to initialise before requesting document content, replacing the fixed 500 ms startup delay. Suppress edits from the empty initial editor so it cannot overwrite the document during startup.
+* Remove both inline and external webview scripts from the standalone print preview before adding the bundled Paged.js script.
+* Insert print-preview assets with a replacement callback so dollar-sign replacement tokens in JavaScript are preserved literally rather than expanded.
+
+### Validation
+* Installed the packaged VSIX in VS Code 1.106.3 on Linux; exercised editing and saving, source mode, diagrams, maths, tables, the notes sidebar, and image paste.
+* Generated a one-page A4 PDF from the exported preview in headless Chromium, with no JavaScript errors. Print colours still need polish for dark editor themes.
+* All 63 automated tests pass; both bundled asset digests verify and VSIX packaging succeeds.
+
 ## v0.4.0 — Claude Code compatibility (2026-11-14)
 
 ### Added
@@ -47,25 +65,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Not yet verified
 * Initially checked against a stand-in for the VS Code API. The Backlinks panel, mention linking, and file-rename handling have since been exercised in desktop VS Code; see [the test report](docs/TESTING.md). Native text-editor completion and links still need a UI check.
-
-## Unreleased
-
-### Documentation and branding
-* Replace the inherited extension icon with an original folded-vellum V mark; add it to the README with DreamLab AI, CI, version, licence, VS Code, and GitHub badges.
-* Add a screenshot walkthrough, disposable demo workspace, and desktop feature test report for 0.4.0.
-* Confirm desktop editing/saving, backlinks and mention linking, missing-note creation, file-rename link updates, templates, selection reference/reveal, link context, and outside-edit reload behaviour in VS Code 1.106.3 on Linux. See `docs/TESTING.md` for evidence and remaining gaps.
-* Confirm one-page A4 export without page errors; record the remaining dark-theme print contrast issue and the native clipboard limitation.
-
-### Fixed
-* Remove a duplicate `markdown-live.refreshSidebar` registration that prevented extension activation in VS Code.
-* Wait for Milkdown to initialise before requesting document content, replacing the fixed 500 ms startup delay. Suppress edits from the empty initial editor so it cannot overwrite the document during startup.
-* Remove both inline and external webview scripts from the standalone print preview before adding the bundled Paged.js script.
-* Insert print-preview assets with a replacement callback so dollar-sign replacement tokens in JavaScript are preserved literally rather than expanded.
-
-### Validation
-* Installed the packaged VSIX in VS Code 1.106.3 on Linux; exercised editing and saving, source mode, diagrams, maths, tables, the notes sidebar, and image paste.
-* Generated a one-page A4 PDF from the exported preview in headless Chromium, with no JavaScript errors. Print colours still need polish for dark editor themes.
-* All 15 unit tests pass; both bundled asset digests verify and VSIX packaging succeeds.
 
 ## v0.2.0 — Vellum Markdown Editor (2026-11-14)
 
@@ -147,7 +146,6 @@ See `SECURITY-REVIEW.md`.
 * **Task List Rendering**: Fixed a bug where task list items rendered as standard bullet points. Introduced interactive CSS-based checkboxes and a ProseMirror plugin for real-time toggling without `input` elements.
 * **List Conversion**: Fixed a bug where switching between Bullet Lists and Ordered Lists from the toolbar would not correctly mutate the list type.
 * **PDF Export Assets**: Fixed a critical issue where images and media were missing during Print to PDF by properly resolving the `<base>` href to absolute local file URIs.
-
 
 ## v0.0.8
 

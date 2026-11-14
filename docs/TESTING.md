@@ -89,3 +89,20 @@ node_modules/.bin/esbuild ./src/extension.ts --bundle --outfile=dist/extension.j
 
 The placeholder `src/test/extension.test.ts` suite was not used as evidence for these
 flows. Stand-in API unit tests and the actual desktop checks are distinct coverage.
+
+## Headless CLI review — 2026-11-14
+
+The subsequent `vellum-graph` update passes all 63 tests (the original 51, seven
+Vault tests, and five CLI integration tests that execute the bundled CLI). Checked
+backlinks, mentions, unresolved targets, and graph output against `docs/demo`.
+The demo's unresolved `Next steps` link is intentional.
+
+Review reproduced a folder rename into its own descendant that rewrote links before
+the filesystem rejected the move. The CLI now rejects that move before editing,
+normalises backslash paths consistently for planning and execution, and refuses to
+overwrite dangling symlinks. Regression tests verify saved files after successful
+moves and unchanged links after rejected moves, plus JSON and exit-code behaviour.
+Renames remain non-atomic for unexpected I/O failures, as documented in the README.
+
+VSIX packaging also passed after the CLI addition: the extension remains a browser
+bundle; CLI output, source, tests, and the agent briefings stay out of the package.

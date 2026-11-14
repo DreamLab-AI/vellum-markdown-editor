@@ -206,8 +206,9 @@ npm run graph -- graph --root ~/notes --json  # every edge, for other tools
 - Exit status is 0 on success, 1 when a note or target is not found, 2 on a usage error.
 - **Rename outside VS Code with `rename --apply`.** VS Code only updates links for renames made
   in its own Explorer. `git mv`, `mv` or an agent's file tools leave the links broken.
-  `--apply` refuses to overwrite an existing file. It writes the link edits first and moves the
-  file second, so commit first or review with the dry run.
+  `--apply` refuses to overwrite existing files or dangling symlinks, rejects moving a folder
+  inside itself, and normalises backslash paths before applying edits. It writes the link
+  edits first and moves the file second, so commit first or review with the dry run.
 
 The CLI bundles to `out/vellum-graph.mjs` on each run. That file is gitignored and not shipped in
 the VSIX. It reads files only, so unsaved edits in an open editor are not seen, and symlinked
@@ -220,7 +221,7 @@ Not yet published to the VS Code Marketplace; [PUBLISHING.md](PUBLISHING.md) has
 The current build was exercised in desktop VS Code 1.106.3 on Linux: live/source
 editing and saving, backlinks and mention linking, missing-note creation, Explorer
 rename link updates, templates, selection references and reveal, link context, outside
-file changes, and print export. All 58 unit tests pass, including the headless
+file changes, and print export. All 63 automated tests pass, including the headless
 `vellum-graph` queries. The [test report](docs/TESTING.md)
 distinguishes desktop checks from unit coverage and lists remaining gaps.
 
@@ -234,7 +235,7 @@ Requires Node 20 or later.
 
 ```sh
 npm ci --ignore-scripts      # install scripts are not needed to build
-npm run test:unit            # 58 tests
+npm run test:unit            # 63 tests
 npm run package              # verifies the pinned assets, then bundles into dist/
 npx @vscode/vsce package     # produces a .vsix
 code --install-extension vellum-markdown-editor-*.vsix
