@@ -68,6 +68,44 @@ export function resolveLink(link: NoteLink, source: string, notes: readonly stri
 }
 
 /**
+ * `resolveLink` for many links against one set of notes. The set is indexed
+ * once, so each lookup costs the size of its answer, not of the vault. It
+ * returns exactly what `resolveLink(link, source, notes)` returns.
+ */
+export function createResolver(notes: readonly string[]): (link: NoteLink, source: string) => string | null {
+  const exact = new Map<string, string[]>();
+  const suffix = new Map<string, string[]>();
+  const anyCase = new Map<string, string>();
+  const present = new Set(notes);
+  const add = (map: Map<string, string[]>, key: string, note: string) => {
+    const list = map.get(key);
+    if (list) list.push(note);
+    else map.set(key, [note]);
+  };
+  for (const note of notes) {
+    const key = stripExt(note).toLowerCase();
+    add(exact, key, note);
+    // Every tail that starts at a folder boundary: what `endsWith('/' + target)` accepts.
+    for (let at = key.indexOf('/'); at !== -1; at = key.indexOf('/', at + 1)) add(suffix, key.slice(at + 1), note);
+    const lower = note.toLowerCase();
+    if (!anyCase.has(lower)) anyCase.set(lower, note);
+  }
+  return (link, source) => {
+    if (link.kind === 'wiki') {
+      if (!link.target.trim()) return source;
+      const t = normalisePath(stripExt(link.target.trim()));
+      if (!t) return null;
+      const want = t.toLowerCase();
+      return closest(exact.get(want) ?? suffix.get(want) ?? [], source);
+    }
+    const joined = link.target.startsWith('/') ? link.target : `${dirName(source)}/${link.target}`;
+    const path = normalisePath(joined);
+    if (path === null) return null;
+    return present.has(path) ? path : (anyCase.get(path.toLowerCase()) ?? null);
+  };
+}
+
+/**
  * The shortest wikilink text that means `note` and nothing else. A name shared
  * by two notes is qualified with folders until it is unambiguous.
  */

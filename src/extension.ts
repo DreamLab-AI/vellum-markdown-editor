@@ -6,6 +6,7 @@ import { SidebarProvider } from './sidebarProvider';
 import { NoteManager } from './noteManager';
 import { registerLinks } from './links/register';
 import { copyLinkContext } from './ai/assistant';
+import { GraphPanel } from './graph/graphPanel';
 
 export function activate(context: vscode.ExtensionContext) {
   // Register the custom editor provider
@@ -17,6 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     linkIndex.onDidChange(() => MarkdownLiveProvider.postLinkState()),
     vscode.commands.registerCommand('markdown-live.copyLinkContext', () => copyLinkContext(linkIndex)),
+    // The note graph loads nothing until this command runs.
+    vscode.commands.registerCommand('markdown-live.showGraph', () => GraphPanel.show(context.extensionUri, linkIndex)),
   );
 
   // Register file deletion handler for cleaning up attachments

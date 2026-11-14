@@ -24,7 +24,7 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See `LI
 
 ## Components bundled into the built extension
 
-All are MIT-licensed, which is compatible with GPL-3.0. Their licence texts ship in each
+All are MIT-licensed or used under their MIT option, which is compatible with GPL-3.0. Their licence texts ship in each
 package under `node_modules/` and are reproduced by reference here.
 
 | Component | Version | Copyright |
@@ -35,6 +35,13 @@ package under `node_modules/` and are reproduced by reference here.
 | ProseMirror (`prosemirror-*`) | per lockfile | © Marijn Haverbeke and others |
 | CodeMirror 6 (`@codemirror/*`) | per lockfile | © Marijn Haverbeke and others |
 | KaTeX (`katex`) | per lockfile | © 2013-2020 Khan Academy and other contributors |
+| Ontomark graph (`@dreamlab-ai/ontomark-graph`) | 0.3.0, pinned by SHA-256 | © 2026 DreamLab-AI and contributors. MIT OR Apache-2.0, taken under MIT |
+| vowl-wasm (`@dreamlab-ai/vowl-wasm`) | 0.2.3, pinned by SHA-256 | © 2025-2026 DreamLab-AI. A clean-room implementation of the VOWL notation of WebVOWL, © 2014-2019 Vincent Link, Steffen Lohmann, Eduard Marbach, Stefan Negru, Vitalis Wiens |
+
+The last two draw and arrange the note graph. vowl-wasm is a WebAssembly module compiled from
+Rust, so it contains its Rust dependencies. Their notices, and the licences of both packages,
+ship in the built extension under `dist/licenses/`, copied from the pinned packages at build
+time.
 
 The complete dependency set, with exact versions and integrity hashes, is `package-lock.json`.
 Run `npx license-checker --production --summary` for a full licence inventory.

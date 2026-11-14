@@ -106,3 +106,25 @@ test('CLI refuses a destination outside the root before rewriting links', () => 
   assert.equal(readFileSync(join(root, 'Index.md'), 'utf8'), 'See [[notes/Plan]].\n');
   assert.ok(existsSync(join(root, 'notes/Plan.md')));
 });
+
+test('CLI neighbours prints the graph view\'s neighbourhood and validates its bounds', () => {
+  const root = fixture();
+  const json = run(root, 'neighbours', 'Plan', '--depth', '2', '--json');
+  assert.equal(json.status, 0, json.stderr);
+  const g = JSON.parse(json.stdout);
+  assert.equal(g.centre, 'notes/Plan.md');
+  assert.deepEqual(g.nodes.map((n: { id: string; missing: boolean }) => [n.id, n.missing]), [
+    ['notes/Plan.md', false],
+    ['Index.md', false],
+    ['/?missing', true],
+  ]);
+  assert.equal(g.depth, 2);
+  assert.equal(g.truncated, false);
+  const text = run(root, 'neighbours', 'Index').stdout;
+  assert.match(text, /^1 {2}notes\/Plan\.md$/m);
+  assert.match(text, /^Index\.md -> notes\/Plan\.md$/m);
+  assert.match(run(root, 'neighbours', 'Plan').stdout, /\[\[Missing\]\] \(missing\)/);
+  assert.equal(run(root, 'neighbours', 'Absent').status, 1);
+  assert.equal(run(root, 'neighbours', 'Plan', '--depth', 'two').status, 2);
+  assert.equal(run(root, 'neighbours').status, 2);
+});

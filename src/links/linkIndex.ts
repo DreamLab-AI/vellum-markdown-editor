@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import { findUnlinkedMentions, Mention, NoteLink, parseNote, ParsedNote } from './parser';
 import { baseName, linkTextFor, planRenameEdits, resolveLink } from './resolver';
+import { GraphBounds, NoteGraph, noteNeighbourhood } from './graph';
 
 const NOTE_GLOB = '**/*.{md,markdown}';
 const EXCLUDE = '**/{node_modules,.git,.obsidian,.trash}/**';
@@ -205,6 +206,25 @@ export class LinkIndex implements vscode.Disposable {
       }
     }
     return out.sort((a, b) => a.sourcePath.localeCompare(b.sourcePath) || a.link.line - b.link.line);
+  }
+
+  /**
+   * The bounded neighbourhood of `uri` among the notes of its workspace folder,
+   * with the URI of every note in it. Undefined when the note is not indexed.
+   */
+  public neighbourhood(uri: vscode.Uri, bounds?: GraphBounds): { root: string; graph: NoteGraph; uris: Map<string, vscode.Uri> } | undefined {
+    const centre = this.entryFor(uri);
+    if (!centre) return undefined;
+    const all = this.inRoot(centre.root);
+    const graph = noteNeighbourhood(all, centre.path, bounds);
+    if (!graph) return undefined;
+    const byPath = new Map(all.map((e) => [e.path, e.uri]));
+    const uris = new Map<string, vscode.Uri>();
+    for (const node of graph.nodes) {
+      const target = node.path === undefined ? undefined : byPath.get(node.path);
+      if (target) uris.set(node.id, target);
+    }
+    return { root: centre.root, graph, uris };
   }
 
   /** Plain-text mentions of the note's name in other notes. */

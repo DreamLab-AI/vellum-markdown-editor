@@ -12,6 +12,7 @@ import {
   resolveWiki,
 } from './resolver';
 import { buildLinkContext } from '../ai/reference';
+import { GraphBounds, NoteGraph, noteNeighbourhood } from './graph';
 
 export interface VaultNote extends ParsedNote {
   path: string;
@@ -133,6 +134,11 @@ export class Vault {
       }
     }
     return out;
+  }
+
+  /** The bounded neighbourhood the extension's graph view draws for `path`. */
+  neighbourhood(path: string, bounds?: GraphBounds): NoteGraph | undefined {
+    return noteNeighbourhood([...this.notes.values()], path, bounds);
   }
 
   /** Notes with no links to or from any other note. */

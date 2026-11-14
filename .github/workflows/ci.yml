@@ -20,7 +20,7 @@ jobs:
       # Install scripts are not needed to build and are not run.
       - run: npm ci --ignore-scripts
       - run: npm run test:unit
-      # Verifies the pinned Pele and Paged.js digests, then bundles.
+      # Verifies the pinned Pele, Paged.js, Ontomark graph and vowl-wasm digests, then bundles.
       - run: npm run package
       - run: npx @vscode/vsce package --out vellum.vsix
       - uses: actions/upload-artifact@v4

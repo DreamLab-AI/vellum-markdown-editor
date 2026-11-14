@@ -44,7 +44,7 @@ node_modules/.bin/esbuild src/cli/vellum-graph.ts --bundle --platform=node --for
 `--root` is the notes folder, treated as the workspace folder. It defaults to the current
 directory. Within this repo, `--root docs/demo` is a small sample vault. Commands: `notes`,
 `links`, `backlinks`, `mentions`, `unresolved`, `context`, `resolve`, `linktext`, `graph`,
-`orphans`, `rename`. `--help` lists them. With `--json`, lines are 1-based and columns 0-based.
+`neighbours`, `orphans`, `rename`. `--help` lists them. With `--json`, lines are 1-based and columns 0-based.
 Exit status: 1 means not found, 2 means usage error.
 
 Use it at these points:
@@ -57,6 +57,7 @@ Use it at these points:
 | After writing or editing notes | `unresolved` finds links to notes that do not exist |
 | Moving or renaming a note or folder | `rename <from> <to>` (dry run), then `--apply`. **Do not use `mv` or `git mv`**: VS Code updates links only for renames made in its own Explorer |
 | Auditing a vault | `orphans`, `graph --json` |
+| Seeing what the Note Graph panel shows for a note | `neighbours <note> [--depth N] [--max N]` |
 
 `--apply` rewrites the links, then moves the files, and refuses to overwrite. It is not atomic,
 so work on a clean git tree.
@@ -83,13 +84,16 @@ so work on a clean git tree.
 | `src/extension.ts` | Activation; registers the editor, the link system, the sidebar and commands |
 | `src/editorProvider.ts`, `src/handlers/messageHandler.ts` | Custom editor; handles webview messages (save, images, links, AI, PDF export) |
 | `src/links/` | `parser`, `resolver`, `wikilink`: **pure**. `linkIndex` (live index over `vscode`), `backlinksView`, `register` (rename edits, text-editor wikilinks). `vault`: pure in-memory index for the CLI |
+| `src/links/graph.ts` | **Pure** bounded neighbourhood of a note; the Note Graph panel and the CLI's `neighbours` both use it |
+| `src/graph/` | `graphPanel.ts` (the Note Graph webview panel: follows the note in focus, sends the graph, opens notes); `messages.ts` (**pure**: the message contract and its validation) |
+| `webview/graph/main.ts` | The Note Graph page, bundled to `dist/graph.js` with Ontomark's renderer and layout driver and the vowl-wasm layout module |
 | `src/cli/vellum-graph.ts` | The headless CLI (Node only, never bundled into the extension) |
 | `src/ai/` | `reference.ts` (pure: `@path#a-b` mapping, link-context text, Claude URI); `assistant.ts` (delivery to Claude Code, Antigravity, chat or clipboard) |
 | `src/security.ts` | Escaping and validation for anything crossing a trust boundary |
 | `src/sidebarProvider.ts`, `noteManager.ts`, `template.ts`, `bookmarkManager.ts` | Notes sidebar, new notes and templates, annotations |
 | `webview/` | Editor UI bundled to `dist/webview.js` (Milkdown, CodeMirror, plugins for wikilinks, diagrams, search, image paste) |
 | `test/unit/*.test.ts`, `test/stubs/vscode.ts` | `node --test` suites. `vscode` is aliased to an in-memory stub |
-| `scripts/verify-pins.mjs` | SHA-256 check of vendored Pele and Paged.js at build time |
+| `scripts/verify-pins.mjs` | SHA-256 check of vendored Pele, Paged.js, the Ontomark graph package and the vowl-wasm module at build time; copies their notices to `dist/licenses/` |
 | `docs/TESTING.md`, `docs/WALKTHROUGH.md`, `docs/demo/` | Desktop test report, screenshots, sample vault |
 | `SECURITY-REVIEW.md`, `PUBLISHING.md`, `NOTICE.md` | Security posture, Marketplace release steps, attribution |
 
@@ -100,7 +104,7 @@ is in `package.json`. Run it directly from `node_modules/.bin` if needed.
 
 ```sh
 npm ci --ignore-scripts   # install scripts are not needed
-npm run test:unit         # esbuild bundles test/unit/*.test.ts, then node --test (63 tests)
+npm run test:unit         # esbuild bundles test/unit/*.test.ts, then node --test (79 tests)
 npm run package           # verify pins, bundle webview and extension into dist/
 npx @vscode/vsce package  # .vsix
 ```
@@ -113,14 +117,20 @@ does not run lint or `tsc`.
 - **No Node APIs in the extension.** `src/` (except `src/cli/`) and `webview/` run in a browser
   context: no `fs`, `path`, `child_process` or sockets. Use `vscode.workspace.fs` and the
   `vscode` API.
-- **Keep the pure modules pure** (`parser`, `resolver`, `wikilink`, `vault`, `ai/reference`,
-  `security`): no `vscode` or DOM imports. The CLI and the unit tests depend on that.
+- **Keep the pure modules pure** (`parser`, `resolver`, `wikilink`, `vault`, `links/graph`,
+  `graph/messages`, `ai/reference`, `security`): no `vscode` or DOM imports. The CLI and the unit tests depend on that.
 - **The CLI must give the same answers as the extension.** Put link behaviour in the pure modules,
   not in `linkIndex.ts`. `vault.ts` mirrors `LinkIndex`'s queries. The note pattern, excluded
   folders and 2 MB cap in `src/cli/vellum-graph.ts` mirror `linkIndex.ts`. Change both together.
 - **Security posture** (see `SECURITY-REVIEW.md`): strict CSP with nonces, no inline handlers,
   escape everything interpolated from workspace files (`src/security.ts`), no `unsafe-eval`, no
-  network requests or remote fonts. Vendored assets change only with new pinned digests.
+  network requests or remote fonts. Vendored assets change only with new pinned digests. The
+  Note Graph page alone allows `'wasm-unsafe-eval'`, for its layout module; do not add it to
+  another page, and do not add a worker, `connect-src` or a fetched `.wasm`.
+- **The Note Graph does not fork its renderer.** Drawing and layout driving live in Ontomark's
+  `packages/graph`, which Ontomark Obsidian also consumes; the force layout lives in vowl-wasm.
+  Change them there, release, and move the pin and digests here. A webview message names a node
+  by the ID the extension sent, never a path or URI; keep new requests in `graph/messages.ts`.
 - **Packaging:** `.vscodeignore` keeps sources, tests, docs and `out/` out of the VSIX. Check it
   when adding top-level files.
 - **Do not rename** `markdown-live.*` commands or `markdownLive.*` settings.
@@ -135,6 +145,12 @@ does not run lint or `tsc`.
   `src/editorProvider.ts` is passed in `WebviewOptions`. esbuild ignores types, so the build is
   unaffected.
 - ESLint/Prettier formatting is not enforced. Older files fail it. Format only what you touch.
+- `LinkIndex.backlinks()`, `outgoing()` and `unlinkedMentions()` resolve each link by scanning
+  every note, which is slow on vaults of thousands of notes. The Note Graph uses
+  `createResolver` (`src/links/resolver.ts`), which gives the same answers from an index.
+  Moving the other queries to it is open work.
+- The Note Graph has not been run inside an installed VS Code or vscode.dev. Its page was run
+  in Chrome under its real CSP with a stand-in for the VS Code API (`docs/TESTING.md`).
 - Delivery to Claude Code has not been run against the real Claude extension. That covers the
   selection opened beside Vellum, the @-mention command lookup and the
   `vscode://anthropic.claude-code/open` link. `docs/TESTING.md` lists what was verified.

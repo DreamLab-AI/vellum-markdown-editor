@@ -8,11 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+* **Note graph** (`Markdown Live: Show Note Graph`, from the Command Palette, the Backlinks panel title bar or the editor's `…` menu): a panel beside the editor that draws the note in focus and the notes linked to it. It follows the note in focus, updates from the link index as links change, opens a note on double-click or Enter, and draws links to notes that do not exist as grey diamonds that cannot be opened. It starts one link away (`markdownLive.graph.depth`, 1 to 3) and draws at most 150 notes, saying how many it hid and offering more, up to 1,000. Nothing loads until the command runs.
+* The graph is drawn by Ontomark's shared renderer (`@dreamlab-ai/ontomark-graph` 0.3.0) and arranged by the `vowl-wasm` 0.2.3 force layout (Rust compiled to WebAssembly), both bundled into `dist/graph.js` from immutable release tarballs and verified by SHA-256 at build time. The layout runs in time-boxed slices in the panel, with no worker and no network request; if the module cannot start the graph is drawn unarranged and says so. The panel's policy is one nonce for script and style plus `'wasm-unsafe-eval'`; see `SECURITY-REVIEW.md`.
+* The graph is rebuilt through an index of note paths built once per rebuild, and not at all while the panel is hidden. On a synthetic 6,000-note vault a rebuild takes about 0.13 s.
+* `vellum-graph neighbours <note> [--depth N] [--max N]`: the same bounded neighbourhood from a terminal, built by the same pure module (`src/links/graph.ts`) as the panel.
 * **`vellum-graph`** (`npm run graph -- <command>`): the link graph from a terminal, for Claude Code, other agents and scripts that cannot query the running extension. Backlinks, outgoing links, unlinked mentions, unresolved links, link context, resolution, edges, orphans, and rename planning, with `--apply` to rewrite links and move a note or folder outside VS Code. It reuses the extension's parser and resolver through a new VS Code-free `Vault` (`src/links/vault.ts`). Not part of the VSIX.
 * `AGENTS.md` (and a `CLAUDE.md` that imports it): a briefing for coding agents on the repository and on reaching Vellum's features.
 
 ### Documentation and branding
-* Record the shared Ontomark graph architecture and implementation handoff, including optional Vellum navigation, Rust/WASM benchmark gates and typed-vault compatibility. No graph feature is implemented by this documentation change.
+* Record the shared Ontomark graph architecture and implementation handoff, then amend both for what was built: the layout is a requirement of a usable graph rather than an optional optimisation, the existing `vowl-wasm` simulation is reused instead of a new crate, and the large-graph benchmarks gate later work, not the bounded Vellum view.
+
+### Fixed
+* A `.claude-flow/` folder left in the checkout by local tooling was not excluded from the VSIX. It is now in `.vscodeignore`. The published 0.4.0 package did not contain it.
 * Add Marketplace installation instructions and links to the public listing and GitHub release downloads. Publish 0.4.0 through Marketplace Trusted Publishing on 14 November 2026.
 * Link the extension homepage to dreamlab-ai.com and document Microsoft's DNS verification process and six-month eligibility requirements.
 * Add a screenshot of the installed 0.4.0 extension rendering a Mermaid class diagram with Pele in an existing Obsidian knowledge vault.

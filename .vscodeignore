@@ -28,3 +28,4 @@ CLAUDE.md
 .agentic-qe/**
 dream.config.json
 .dream-standby
+.claude-flow/**

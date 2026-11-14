@@ -46,6 +46,42 @@ remains.
 - The initial security review used Chromium with a stand-in for the host. A subsequent
   smoke test exercised the installed extension in VS Code; see the follow-up below.
 
+## Note graph (2026-11-14)
+
+The note graph is a separate webview panel, opened by a command. Its page is built from one
+template in `src/graph/graphPanel.ts` and loads one bundled script, `dist/graph.js`.
+
+- **Policy:** `default-src 'none'; style-src 'nonce-…'; script-src 'nonce-…' 'wasm-unsafe-eval'`.
+  One nonce per load covers the script and the style sheet. There is no `'unsafe-inline'`, no
+  `img-src`, `connect-src`, `font-src` or `worker-src`, and `localResourceRoots` is `dist/` only.
+  This is stricter than the editor's page, which keeps `style-src 'unsafe-inline'`.
+- **`'wasm-unsafe-eval'` is new.** The layout is a WebAssembly module, and a page cannot compile
+  one without it. It permits WebAssembly compilation only; `eval()` and `new Function()` stay
+  blocked, and `'unsafe-eval'` is still not used anywhere. The module's bytes are inside
+  `dist/graph.js`, so it is compiled from memory: nothing is fetched and no worker is started.
+- **The module is pinned.** `@dreamlab-ai/vowl-wasm` 0.2.3 and `@dreamlab-ai/ontomark-graph`
+  0.3.0 come from immutable GitHub release tarballs, with lockfile integrity at install and
+  SHA-256 of the exact files (`vowl_wasm_bg.wasm`, `vowl_wasm.js`, the renderer and the layout
+  driver) at build time in `scripts/verify-pins.mjs`. The module is Rust compiled by its own
+  project's release workflow; this repository does not rebuild it, so its contents are trusted
+  as released, as Pele's and Paged.js's are.
+- **What the page can ask for:** three messages, validated in `src/graph/messages.ts` before
+  anything acts on them. `ready` re-sends the graph. `bounds` changes depth and node limit
+  within fixed ranges. `open` names a node by the opaque ID the extension sent and the
+  generation of the graph it was in; the extension looks that ID up in the graph now on screen
+  and opens the note it maps to. The page cannot name a path, a URI or a command, a link to a
+  note that does not exist has no URI to open, and a request from a graph since replaced is
+  dropped.
+- **What the page is given:** note paths relative to the workspace folder, note names and link
+  structure. No note text. Everything is drawn on a canvas or set as `textContent`; nothing
+  from the workspace is parsed as HTML.
+- **Checked:** unit tests cover the policy string, the message validation and the open rules
+  with a stand-in for the VS Code API. The page was then run in Chrome under the real policy:
+  the module compiled, the graph was arranged, dragged and searched, the browser reported no
+  policy violation and the only resource loaded was the page's own script.
+- **Not checked:** the panel in an installed VS Code or vscode.dev. VS Code injects its own
+  bootstrap and theme variables into a webview, and those were stood in for here.
+
 ## VS Code follow-up (2026-11-14)
 
 A packaged VSIX was installed in VS Code 1.106.3 on Linux. Testing exposed a duplicate

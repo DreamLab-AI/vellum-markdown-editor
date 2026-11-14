@@ -1,7 +1,37 @@
 # Handoff: shared graph components for Vellum and Ontomark
 
-Date: 14 November 2026. Status: ready for implementation planning; no product
-changes made. Decision: [ADR-VEL-001](../adr/ADR-VEL-001-shared-graph-and-rust-wasm.md).
+Date: 14 November 2026. Status: first slice implemented the same day; see the status
+table. Decision: [ADR-VEL-001](../adr/ADR-VEL-001-shared-graph-and-rust-wasm.md).
+
+## Status, 14 November 2026 (after implementation)
+
+The first slice is built. Read this table first; the sections below are the original
+handoff, kept for the reasoning and for the work that remains. Where the two disagree,
+this table and the [ADR amendment](../adr/ADR-VEL-001-shared-graph-and-rust-wasm.md#amendment-14-november-2026)
+are current.
+
+| Step | State | What exists | What remains |
+|---|---|---|---|
+| 1. Fixtures and baseline | Not done, and re-scoped | Nothing | The premise changed: there was no JavaScript layout to measure against. The 100, 1,000 and 10,000-node programme now gates moving the layout to a worker or a slimmer engine, for Obsidian's whole-vault view and the publisher. It does not gate Vellum's bounded view. |
+| 2. Renderer usable by both hosts | Done | `@dreamlab-ai/ontomark-graph` 0.3.0: host `ariaLabel`, `preservePositions` on `setGraph`, explicit node `shape`, and the `/layout` driver with a `vowlEngine` adapter. 29 tests. Defaults unchanged for existing consumers. | Browser tests of the mounted renderer in Ontomark's own harness were not rerun. The publisher's suite was not run against 0.3.0; the publisher has not moved its pin. |
+| 3. Bounded Vellum graph | Built, not accepted | `src/links/graph.ts` (pure), `src/graph/` (panel and message validation), `webview/graph/main.ts`, command `markdown-live.showGraph`, setting `markdownLive.graph.depth`, CLI `neighbours`. 79 unit tests. Page run in Chrome under its real policy. | The "Done when" below asks for acceptance in real VS Code. None of it has been run: see [TESTING.md](../TESTING.md#note-graph--2026-11-14). Not in a Marketplace release. |
+| 4. Rust computation behind the shared API | Done differently | No new crate. The driver uses `vowl-wasm`'s existing simulation, on the main thread in slices. `NggExplorer.loadArrays` is added to `vowl-wasm` `main`, unreleased; the driver uses it when present and the module's NGG1 encoder otherwise. | Release `vowl-wasm` with `loadArrays` when convenient (its release workflow publishes to npm). Extract a layout-only crate if a consumer needs the size back. A worker, only if step 1's measurements call for one. |
+| 5. Typed-vault editing compatibility | Not started | The rename gap for front matter references is confirmed and unchanged. | All of it. Vellum must not claim to edit Ontomark vaults safely until this is done. |
+
+Ontomark Obsidian's state is recorded in that repository.
+
+Decisions the implementation took that this handoff left open:
+
+- **Bounds.** One link away by default, up to three. 150 notes by default, doubling on request
+  to 1,000. Nearer notes are kept first, existing notes before missing ones, then by path.
+- **Missing notes** are nodes of their own kind (a diamond, a neutral colour, an ID no path
+  can have) and cannot be opened from the graph.
+- **IDs.** A graph belongs to one workspace folder. The webview is sent each note's path
+  relative to that folder as its ID and sends an ID back; the extension maps it through the
+  graph currently on screen. Two folders cannot collide because one graph never spans two.
+- **Leaving the workspace.** A note outside every workspace folder, or not in the index,
+  replaces the graph with a sentence saying why. A tab that is not a note changes nothing.
+- **Worker failure** became module failure: the graph is drawn unarranged and says so.
 
 ## Outcome
 

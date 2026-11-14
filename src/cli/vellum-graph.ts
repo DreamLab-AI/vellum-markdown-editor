@@ -39,6 +39,10 @@ Commands (a <note> is a path relative to the root, or a wikilink target like "Pr
                             the note a wikilink target leads to, written from --from
   linktext <note>           the shortest unambiguous wikilink text for a note
   graph                     every note-to-note edge
+  neighbours <note> [--depth N] [--max N]
+                            the bounded neighbourhood the editor's graph view draws: notes within
+                            N links (1-3, default 1) in either direction, at most --max nodes
+                            (10-1000, default 150); says when the bound cut it short
   orphans                   notes with no links in or out
   rename <from> <to> [--apply]
                             the link edits that keep links working after moving a note or
@@ -61,6 +65,13 @@ interface Args {
   json: boolean;
   apply: boolean;
   from?: string;
+  depth?: number;
+  max?: number;
+}
+
+function wholeNumber(option: string, value: string): number {
+  if (!/^\d+$/.test(value)) throw new UsageError(`${option} needs a whole number`);
+  return Number(value);
 }
 
 function parseArgs(argv: string[]): Args | 'help' {
@@ -77,6 +88,8 @@ function parseArgs(argv: string[]): Args | 'help' {
     else if (a === '--apply') out.apply = true;
     else if (a === '--root') out.root = value();
     else if (a === '--from') out.from = value();
+    else if (a === '--depth') out.depth = wholeNumber(a, value());
+    else if (a === '--max') out.max = wholeNumber(a, value());
     else if (a.startsWith('--')) throw new UsageError(`unknown option ${a}`);
     else if (!out.command) out.command = a;
     else out.positional.push(a);
@@ -214,6 +227,18 @@ function run(args: Args, vault: Vault): { json: unknown; text: string } {
         json: { notes: vault.paths(), edges },
         text: edges.map((e) => `${e.from} -> ${e.to}`).join('\n'),
       };
+    }
+    case 'neighbours': {
+      const path = noteArg(vault, need(args, 1, 'a note')[0]);
+      const g = vault.neighbourhood(path, { depth: args.depth, maxNodes: args.max })!;
+      const name = (id: string) => g.nodes.find((n) => n.id === id)!;
+      const show = (id: string) => (name(id).missing ? `[[${name(id).label}]] (missing)` : id);
+      const lines = [
+        ...g.nodes.filter((n) => n.depth > 0).map((n) => `${n.depth}  ${show(n.id)}`),
+        ...g.edges.map((e) => `${show(e.source)} -> ${show(e.target)}`),
+      ];
+      if (g.truncated) lines.push(`truncated: ${g.hidden} more within ${g.depth} link(s); raise --max (now ${g.maxNodes})`);
+      return { json: g, text: lines.join('\n') || 'no linked notes' };
     }
     case 'orphans': {
       const o = vault.orphans();

@@ -137,9 +137,57 @@ Vellum links notes the way Obsidian does, and stores them as plain `[[wikilinks]
 - **In the plain text editor too.** Wikilinks are clickable and `[[` completes note names.
 
 Limits: `![[Note]]` renders as a link, not an inline copy of the note. Heading links open the
-note but do not scroll to the heading. There is no graph view, no hover preview and no block
-references. A wikilink is edited by deleting and retyping it, or in source mode. Inside a table
+note but do not scroll to the heading. There is no hover preview and no block references. The
+[note graph](#note-graph) shows one note's neighbourhood, not the whole vault. A wikilink is edited by deleting and retyping it, or in source mode. Inside a table
 write the pipe as `\|`. Links resolve within one workspace folder.
+
+## Note graph
+
+**Markdown Live: Show Note Graph** opens a panel beside the editor that draws the note in focus
+and the notes linked to it, in either direction. Run it from the Command Palette, the Backlinks
+panel's title bar or the editor's `…` menu. Nothing is loaded, compiled or indexed for the graph
+until the command runs, and there is no setting to enable.
+
+![The note graph of a note with 40 linked notes, two links away, drawn in Chrome under the panel's content security policy](docs/images/note-graph-browser-harness.jpg)
+
+- **It follows the note in focus.** Switch notes and the graph recentres. It is rebuilt from
+  the same link index as the Backlinks panel whenever that index changes, so links typed,
+  saved, renamed or deleted reach it, and the layout is asked to keep notes already on screen
+  where they are. Tests cover the rebuild; the effect has not been watched in VS Code. A panel
+  hidden behind another tab does no work until it is shown again.
+- **It is bounded.** It opens one link away from the note. *Links away* widens that to two or
+  three, and `markdownLive.graph.depth` sets where it starts. At most 150 notes are drawn; when
+  more are in range the panel says how many are hidden and *Show more* doubles the limit, up
+  to 1,000. Nearer notes are kept first.
+- **Open a note** by double-clicking it, by selecting it (click, arrow keys or the search box)
+  and pressing Enter, or from the *Notes in this graph* list, which is there for keyboard and
+  screen-reader use. It opens where the current note is and takes focus; the graph then
+  recentres on it.
+- **Missing notes are drawn as grey diamonds.** A `[[link]]` to a note that does not exist yet
+  is shown, since it is part of what the note says, but it is not a file and cannot be opened
+  from the graph. Follow the link in the note to create it.
+- **Drag a note** to move it and its neighbours follow. Drag the background to pan, scroll to
+  zoom, *Fit* or Home to see everything.
+
+The graph shows navigation links only: wikilinks and relative Markdown links in a note's body.
+Links in code and in YAML front matter are not included, as elsewhere in Vellum, so it is not
+an ontology view. Links resolve within one workspace folder, so the graph never crosses folders.
+
+The panel uses two components shared with other projects, both bundled in the extension and
+verified by SHA-256 at build time: the Canvas renderer and layout driver from
+[Ontomark](https://github.com/DreamLab-AI/ontomark/tree/main/packages/graph), which
+[Ontomark Obsidian](https://github.com/DreamLab-AI/ontomark-obsidian) also uses, and the force
+layout from [vowl-wasm](https://github.com/DreamLab-AI/vowl-wasm), which is Rust compiled to
+WebAssembly. The layout runs in short slices in the panel itself, with no worker and no
+network request. If the WebAssembly module cannot start, the graph is still drawn and the
+panel says the notes are not arranged.
+[ADR-VEL-001](docs/adr/ADR-VEL-001-shared-graph-and-rust-wasm.md) records the design.
+
+What has been checked: the panel's page ran in Chrome under its real content security policy,
+with a stand-in for the VS Code API, and arranged, dragged, searched and opened notes with no
+policy violation and no request other than its own script. What has not: the panel inside an
+installed VS Code or vscode.dev, a multi-root workspace, and graphs near the 1,000-note limit.
+[docs/TESTING.md](docs/TESTING.md) has the detail.
 
 ## Working with Claude Code
 
@@ -195,6 +243,7 @@ npm run graph -- context notes/plan.md        # the "Copy Note and Its Links as 
 npm run graph -- rename Project.md archive/Roadmap.md          # dry run: moves and link edits
 npm run graph -- rename Project.md archive/Roadmap.md --apply  # rewrite links, then move
 npm run graph -- graph --root ~/notes --json  # every edge, for other tools
+npm run graph -- neighbours Project --depth 2 # what the Note Graph draws for a note
 ```
 
 | Command | Answers |
@@ -208,6 +257,7 @@ npm run graph -- graph --root ~/notes --json  # every edge, for other tools
 | `resolve <target> [--from <note>]` | The note `[[target]]` leads to, written from `--from` |
 | `linktext <note>` | The shortest unambiguous wikilink for a note |
 | `graph` | Every note-to-note edge |
+| `neighbours <note> [--depth N] [--max N]` | The bounded neighbourhood the Note Graph draws: notes within N links (1 to 3), at most `--max` (10 to 1,000), and whether the bound cut it short |
 | `orphans` | Notes with no links in or out |
 | `rename <from> <to> [--apply]` | Link edits that keep links working after moving a note or folder |
 
@@ -261,7 +311,7 @@ Requires Node 20 or later.
 
 ```sh
 npm ci --ignore-scripts      # install scripts are not needed to build
-npm run test:unit            # 63 tests
+npm run test:unit            # 79 tests
 npm run package              # verifies the pinned assets, then bundles into dist/
 npx @vscode/vsce package     # produces a .vsix
 code --install-extension vellum-markdown-editor-*.vsix
@@ -323,13 +373,15 @@ and export. The [feature test report](docs/TESTING.md) records the observed resu
 | `markdownLive.updateLinksOnRename` | `true` | Rewrite links when a note or folder is renamed or moved |
 | `markdownLive.aiTarget` | `auto` | Assistant for Send Selection: `auto`, `claude`, `antigravity`, `chat`, `clipboard` |
 | `markdownLive.claudeDelivery` | `selection` | How a selection reaches Claude Code: `selection`, `newTab`, `clipboard` |
+| `markdownLive.graph.depth` | `1` | How many links away from the note the Note Graph shows when it opens (1 to 3) |
 
 ## Development plans
 
 The [shared graph ADR](docs/adr/ADR-VEL-001-shared-graph-and-rust-wasm.md) and
-[implementation handoff](docs/handoffs/ontomark-graph.md) describe a planned
-optional graph view, reuse across Vellum and Ontomark, and measured Rust/WASM
-adoption. These are plans, not features of the current release.
+[implementation handoff](docs/handoffs/ontomark-graph.md) record how the note graph shares its
+renderer and layout with Ontomark, and what is still planned: acceptance in installed VS Code,
+measurements on large graphs, and compatibility with typed Ontomark vaults before Vellum claims
+to edit them. The note graph is in this repository and is not in the 0.4.0 Marketplace release.
 
 ## Privacy
 
