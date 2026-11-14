@@ -73,18 +73,25 @@ Once eligible:
 Choose a stable publisher display name, such as **DreamLab AI**: changing it after verification
 revokes the badge. Keep the domain registered and the website available.
 
-### Readiness checks on 14 November 2026
+### Publication record: 14 November 2026
 
 - GitHub's `marketplace` environment is configured with `jjohare` as required reviewer,
-  allowing the `main` branch and `v*` tags. The Marketplace publisher and Trusted Publishing
-  policy still need to be confirmed in the Microsoft account.
+  allowing the `main` branch and `v*` tags. The **DreamLab AI** publisher (`dreamlab-ai`) is
+  created, with `https://dreamlab-ai.com` saved as its domain and company website.
+- The **Vellum release workflow** Trusted Publishing policy is active with the repository,
+  workflow and environment listed above. [Release workflow 43591724094](https://github.com/DreamLab-AI/vellum-markdown-editor/actions/runs/43591724094)
+  successfully submitted version **0.4.0** on **14 November 2026 at 11:48 UTC**.
 - [Verisign RDAP](https://rdap.verisign.com/com/v1/domain/dreamlab-ai.com) records domain
   registration on **30 June 2025**, so the domain-age requirement is already met.
 - `curl -I https://dreamlab-ai.com` returned **HTTP 200** over HTTPS.
-- Domain ownership through DNS and Marketplace publication have **not** been verified by
-  these checks. Record the first successful Marketplace publication date after the listing
-  is live. If that date is **14 November 2026**, the earliest application date is
-  **14 May 2027**. Recalculate if publication happens later.
+- The public Marketplace catalogue returns `dreamlab-ai.vellum-markdown-editor` version
+  **0.4.0**, with publication timestamp **2026-11-14T11:48:28.08Z**. The listing is
+  <https://marketplace.visualstudio.com/items?itemName=dreamlab-ai.vellum-markdown-editor>;
+  the [GitHub release](https://github.com/DreamLab-AI/vellum-markdown-editor/releases/tag/v0.4.0)
+  also provides a downloadable VSIX.
+- Domain verification remains outstanding (`isDomainVerified: false` in the public catalogue).
+  The earliest badge application date is **14 May 2027**, subject to Microsoft's eligibility
+  requirements and review. No DNS record or website deployment was changed for this release.
 
 ## Before the first publish
 

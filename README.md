@@ -9,6 +9,7 @@
 [![Version](https://img.shields.io/github/package-json/v/DreamLab-AI/vellum-markdown-editor)](CHANGELOG.md)
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-green)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS_Code-1.85%2B-007acc)](package.json)
+[![Marketplace](https://img.shields.io/visual-studio-marketplace/v/dreamlab-ai.vellum-markdown-editor?label=Marketplace)](https://marketplace.visualstudio.com/items?itemName=dreamlab-ai.vellum-markdown-editor)
 [![GitHub stars](https://img.shields.io/github/stars/DreamLab-AI/vellum-markdown-editor?style=social)](https://github.com/DreamLab-AI/vellum-markdown-editor)
 
 Maintained by [DreamLab AI](https://dreamlab-ai.com/) and
@@ -18,6 +19,8 @@ The Marketplace publisher ID is `dreamlab-ai`, with [dreamlab-ai.com](https://dr
 as its homepage. Domain verification is a separate Microsoft review; see
 [publishing and verification](PUBLISHING.md).
 
+[Install from the Marketplace](https://marketplace.visualstudio.com/items?itemName=dreamlab-ai.vellum-markdown-editor) ·
+[Download a VSIX](https://github.com/DreamLab-AI/vellum-markdown-editor/releases/latest) ·
 [Visual walkthrough](docs/WALKTHROUGH.md) · [Feature test report](docs/TESTING.md) ·
 [Changelog](CHANGELOG.md) · [Report an issue](https://github.com/DreamLab-AI/vellum-markdown-editor/issues)
 
@@ -239,7 +242,20 @@ PDF export produces an A4 document, but dark-theme colours currently give pale t
 on white pages. Actual Claude Code delivery and native image clipboard transfer remain
 unverified in this run; see the report before relying on those flows.
 
-## Build and install
+## Install
+
+Install [Vellum Markdown Editor from the VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=dreamlab-ai.vellum-markdown-editor),
+or run:
+
+```sh
+code --install-extension dreamlab-ai.vellum-markdown-editor
+```
+
+For manual installation, download the `.vsix` from the
+[latest GitHub release](https://github.com/DreamLab-AI/vellum-markdown-editor/releases/latest)
+and run **Extensions: Install from VSIX...** in VS Code.
+
+### Build from source
 
 Requires Node 20 or later.
 

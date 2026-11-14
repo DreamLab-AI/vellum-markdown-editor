@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `AGENTS.md` (and a `CLAUDE.md` that imports it): a briefing for coding agents on the repository and on reaching Vellum's features.
 
 ### Documentation and branding
+* Add Marketplace installation instructions and links to the public listing and GitHub release downloads. Publish 0.4.0 through Marketplace Trusted Publishing on 14 November 2026.
 * Link the extension homepage to dreamlab-ai.com and document Microsoft's DNS verification process and six-month eligibility requirements.
 * Add a screenshot of the installed 0.4.0 extension rendering a Mermaid class diagram with Pele in an existing Obsidian knowledge vault.
 * Replace the inherited extension icon with an original folded-vellum V mark; add it to the README with DreamLab AI, CI, version, licence, VS Code, and GitHub badges.
