@@ -40,9 +40,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * The `[[` picker lists notes by their shortest unambiguous name and accepts a new name.
 
 ### Not yet verified
-* The Backlinks panel, rename handling and text-editor providers are covered by unit tests against a stand-in for the VS Code API, and the editor node by a browser check. They have not been run inside VS Code.
+* Initially checked against a stand-in for the VS Code API. The Backlinks panel, mention linking, and file-rename handling have since been exercised in desktop VS Code; see [the test report](docs/TESTING.md). Native text-editor completion and links still need a UI check.
 
 ## Unreleased
+
+### Documentation and branding
+* Replace the inherited extension icon with an original folded-vellum V mark; add it to the README with DreamLab AI, CI, version, licence, VS Code, and GitHub badges.
+* Add a screenshot walkthrough, disposable demo workspace, and desktop feature test report for 0.4.0.
+* Confirm desktop editing/saving, backlinks and mention linking, missing-note creation, file-rename link updates, templates, selection reference/reveal, link context, and outside-edit reload behaviour in VS Code 1.106.3 on Linux. See `docs/TESTING.md` for evidence and remaining gaps.
+* Confirm one-page A4 export without page errors; record the remaining dark-theme print contrast issue and the native clipboard limitation.
 
 ### Fixed
 * Remove a duplicate `markdown-live.refreshSidebar` registration that prevented extension activation in VS Code.

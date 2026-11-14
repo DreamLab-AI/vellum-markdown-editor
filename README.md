@@ -1,4 +1,21 @@
+<p align="center">
+  <img src="assets/icon.png" alt="Vellum: a folded ivory V with an amber corner on ink navy" width="128" height="128">
+</p>
+
 # Vellum Markdown Editor
+
+[![DreamLab AI](https://img.shields.io/badge/DreamLab-AI-0b1635)](https://www.dreamlab-ai.com/)
+[![CI](https://github.com/DreamLab-AI/vellum-markdown-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/DreamLab-AI/vellum-markdown-editor/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/github/package-json/v/DreamLab-AI/vellum-markdown-editor)](CHANGELOG.md)
+[![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-green)](LICENSE)
+[![VS Code](https://img.shields.io/badge/VS_Code-1.85%2B-007acc)](package.json)
+[![GitHub stars](https://img.shields.io/github/stars/DreamLab-AI/vellum-markdown-editor?style=social)](https://github.com/DreamLab-AI/vellum-markdown-editor)
+
+Maintained by [DreamLab AI](https://www.dreamlab-ai.com/) and
+[John O’Hare](https://github.com/jjohare).
+
+[Visual walkthrough](docs/WALKTHROUGH.md) · [Feature test report](docs/TESTING.md) ·
+[Changelog](CHANGELOG.md) · [Report an issue](https://github.com/DreamLab-AI/vellum-markdown-editor/issues)
 
 A live, what-you-see-is-what-you-get Markdown editor for VS Code, with diagrams rendered by
 [Pele](https://github.com/obsidianmd/pele) and webviews locked down by a strict content
@@ -13,7 +30,7 @@ by Thinh Vu, released under the same licence, GPL-3.0. See [Attribution](#attrib
 The live editor and notes sidebar in VS Code, with task lists, a table, a Pele-rendered
 flowchart and inline maths:
 
-![Vellum running in VS Code: notes sidebar beside a rendered project notebook with tasks, a table, a flowchart and maths.](assets/previews/live-editor.png)
+![Vellum running in VS Code: notes sidebar beside a rendered project notebook with tasks, a table, a flowchart and maths.](docs/images/01-live-editor.png)
 
 <details>
 <summary>See the same note in source mode</summary>
@@ -21,12 +38,24 @@ flowchart and inline maths:
 Switch between rendered Markdown and the built-in CodeMirror source editor using the
 **Toggle Source Mode** button in the toolbar.
 
-![Vellum source mode in VS Code, showing the Markdown behind the project notebook, including its Mermaid diagram.](assets/previews/source-editor.png)
+![Vellum source mode in VS Code, showing the Markdown behind the project notebook, including its Mermaid diagram.](docs/images/02-source-mode.png)
 
 </details>
 
-These screenshots show the installed extension on Linux. Open the
-[example note](assets/previews/demo.md) to try the same content.
+These screenshots show the current 0.4.0 build in a VS Code Extension Development Host
+on Linux. Copy the [demo workspace](docs/demo) to try the same content, or follow the
+[illustrated flows](docs/WALKTHROUGH.md) for editing, backlinks, renaming notes, templates,
+selection references, and PDF export.
+
+<details>
+<summary>See selection handoff to the normal VS Code editor</summary>
+
+Select a paragraph, then run **Markdown Live: Reveal Selection in Text Editor** to
+open the same source lines beside Vellum.
+
+![Selected rendered paragraph beside its selected Markdown source line in VS Code.](docs/images/06-reveal-selection.png)
+
+</details>
 
 ## What it does
 
@@ -143,12 +172,15 @@ identical lines can land on the nearer one.
 
 Not yet published to the VS Code Marketplace; [PUBLISHING.md](PUBLISHING.md) has the steps.
 
-The editor itself (rendering, diagrams, wikilinks, selection mapping, reloading after an outside
-edit) is tested in Chromium under the shipped content security policy, and the logic behind
-links, renames and references by 51 unit tests. The parts that need VS Code itself (the
-Backlinks panel, rename handling and delivery to Claude Code) are tested against a stand-in for
-the VS Code API and are listed under "Not yet verified" in the [changelog](CHANGELOG.md) until
-they have been confirmed in VS Code. Please report anything that misbehaves.
+The current build was exercised in desktop VS Code 1.106.3 on Linux: live/source
+editing and saving, backlinks and mention linking, missing-note creation, Explorer
+rename link updates, templates, selection references and reveal, link context, outside
+file changes, and print export. All 51 unit tests pass. The [test report](docs/TESTING.md)
+distinguishes desktop checks from unit coverage and lists remaining gaps.
+
+PDF export produces an A4 document, but dark-theme colours currently give pale text
+on white pages. Actual Claude Code delivery and native image clipboard transfer remain
+unverified in this run; see the report before relying on those flows.
 
 ## Build and install
 
@@ -180,13 +212,10 @@ Open a `.md` file, then any of:
 2. Right-click the file in the Explorer and choose **Open in Markdown Live Editor**.
 3. Click the pencil icon at the top right of the text editor.
 
-For a quick smoke check, use a disposable folder with two Markdown notes. Include YAML
-front matter, formatted text, a task list, a table, inline maths and a fenced `mermaid`
-flowchart. Confirm that content loads on opening; edit and save, then inspect the file on
-disk. Toggle source mode, open **Markdown Live: Focus on Notes View**, and paste an image
-to check that it is written under `assets/images` and displayed. Click **Export PDF** to
-generate `.vscode/print-preview.html`, open it in your browser and use **Ctrl+P** (macOS:
-**Cmd+P**) to print or save as PDF. The preview file remains on disk.
+For a guided smoke check, copy the [demo workspace](docs/demo) and follow the
+[screenshot walkthrough](docs/WALKTHROUGH.md). It covers editing and saving, source mode,
+linked notes, backlinks, safe renames, templates, slash commands, assistant references,
+and export. The [feature test report](docs/TESTING.md) records the observed results.
 
 | Command | macOS | Windows and Linux |
 |---|---|---|
