@@ -95,3 +95,23 @@
   word-break: normal !important;
   overflow-wrap: anywhere !important;
 }
+
+/* Wikilinks */
+.wikilink {
+  color: var(--vscode-textLink-foreground);
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 0 1px;
+}
+.wikilink:hover {
+  color: var(--vscode-textLink-activeForeground);
+  text-decoration: underline;
+}
+.wikilink.unresolved {
+  opacity: 0.6;
+  text-decoration: underline dashed;
+}
+.wikilink.ProseMirror-selectednode {
+  outline: 1px solid var(--vscode-focusBorder);
+}

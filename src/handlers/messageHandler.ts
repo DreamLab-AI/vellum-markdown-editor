@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { MarkdownLiveProvider } from '../editorProvider';
 import { BookmarkManager } from '../bookmarkManager';
 import { inlineScript, safeImageExt } from '../security';
+import { followWikilink } from '../links/register';
 
 function getRelativePath(fromPath: string, toPath: string): string {
   const fromParts = fromPath.split('/').filter(Boolean);
@@ -74,7 +75,13 @@ export async function handleWebviewMessage(
         case 'webviewReady':
           provider.isUpdatingFromWebview = false;
           webviewPanel.webview.postMessage({ type: 'update', text: document.getText() });
+          void MarkdownLiveProvider.linkIndex?.whenReady().then(() => MarkdownLiveProvider.postLinkState(webviewPanel));
           break;
+        case 'openWikilink': {
+          const index = MarkdownLiveProvider.linkIndex;
+          if (index && typeof e.target === 'string') await followWikilink(index, document.uri, e.target);
+          break;
+        }
         case 'edit':
           provider.isUpdatingFromWebview = true;
           await provider.updateTextDocument(document, e.text);
@@ -123,55 +130,51 @@ export async function handleWebviewMessage(
           vscode.commands.executeCommand('workbench.action.toggleCustomEditor');
           break;
         case 'searchWikilink': {
-          const files = await vscode.workspace.findFiles('**/*.*', '**/node_modules/**');
-          const items = files.map((file) => ({
-            label: vscode.workspace.asRelativePath(file),
-            description: vscode.workspace.asRelativePath(file),
-            uri: file,
-          }));
+          // `[[` in the editor: pick a note, or type a new name to link a note
+          // that does not exist yet. Notes become wikilinks; other files keep
+          // a standard Markdown link.
+          const index = MarkdownLiveProvider.linkIndex;
+          await index?.whenReady();
+          type Pick = vscode.QuickPickItem & { uri?: vscode.Uri; create?: string };
+          const notes: Pick[] = (index?.notes(document.uri) ?? [])
+            .filter((n) => n.uri.toString() !== document.uri.toString())
+            .sort((a, b) => a.path.localeCompare(b.path))
+            .map((n) => ({ label: index!.linkTextFor(n.uri, document.uri), description: n.path, uri: n.uri }));
+          const others: Pick[] = (await vscode.workspace.findFiles('**/*.*', '**/{node_modules,.git}/**', 2000))
+            .filter((f) => !/\.(md|markdown)$/i.test(f.path))
+            .map((f) => ({ label: vscode.workspace.asRelativePath(f), description: 'file', uri: f }));
 
-          const selected = await vscode.window.showQuickPick(items, {
-            placeHolder: 'Select a file to link',
+          const selected = await new Promise<Pick | undefined>((resolve) => {
+            const qp = vscode.window.createQuickPick<Pick>();
+            qp.placeholder = 'Link a note, or type a new note name';
+            qp.matchOnDescription = true;
+            const base: Pick[] = [...notes, { label: 'Files', kind: vscode.QuickPickItemKind.Separator }, ...others];
+            qp.items = base;
+            qp.onDidChangeValue((value) => {
+              const name = value.trim();
+              const exists = notes.some((n) => n.label.toLowerCase() === name.toLowerCase());
+              qp.items = name && !exists ? [{ label: name, description: 'New note (created when the link is opened)', create: name, alwaysShow: true }, ...base] : base;
+            });
+            qp.onDidAccept(() => { resolve(qp.selectedItems[0]); qp.hide(); });
+            qp.onDidHide(() => { resolve(undefined); qp.dispose(); });
+            qp.show();
           });
+          if (!selected) break;
 
-          if (selected) {
-            const fromPath = document.uri.path;
-            const toPath = selected.uri.path;
-            const fromParts = fromPath.split('/').filter((p) => p);
-            const toParts = toPath.split('/').filter((p) => p);
-            fromParts.pop(); // remove current filename
-
-            let common = 0;
-            while (
-              common < fromParts.length &&
-              common < toParts.length &&
-              fromParts[common] === toParts[common]
-            ) {
-              common++;
-            }
-
-            const upCount = fromParts.length - common;
-            let relParts = [];
-            for (let i = 0; i < upCount; i++) {
-              relParts.push('..');
-            }
-            relParts = relParts.concat(toParts.slice(common));
-            let relativePath = relParts.join('/');
-            if (!relativePath) relativePath = '.';
-
-            const fileName = toParts[toParts.length - 1] || 'untitled';
+          if (selected.create || (selected.uri && /\.(md|markdown)$/i.test(selected.uri.path))) {
+            const target = selected.create ?? index!.linkTextFor(selected.uri!, document.uri);
+            webviewPanel.webview.postMessage({ type: 'insertWikilink', text: `[[${target.replace(/[\[\]|#]/g, ' ').trim()}]]` });
+            break;
+          }
+          if (selected.uri) {
+            const relativePath = getRelativePath(document.uri.path, selected.uri.path).split('/').map((seg) => (seg === '..' ? seg : encodeURIComponent(seg))).join('/');
+            const fileName = selected.uri.path.split('/').pop() || 'untitled';
             const dotIndex = fileName.lastIndexOf('.');
             const baseName = dotIndex > 0 ? fileName.substring(0, dotIndex) : fileName;
             const isImage = /\.(png|jpe?g|gif|svg|webp)$/i.test(fileName);
-
-            let insertTextStr = `[${baseName}](${relativePath})`;
-            if (isImage) {
-              insertTextStr = `![${baseName}](${relativePath})\n*${baseName}*\n`;
-            }
-
             webviewPanel.webview.postMessage({
               type: 'insertText',
-              text: insertTextStr,
+              text: isImage ? `![${baseName}](${relativePath})\n*${baseName}*\n` : `[${baseName}](${relativePath})`,
               replaceLastBracket: true,
             });
           }

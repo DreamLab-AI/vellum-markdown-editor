@@ -2,7 +2,7 @@
   "name": "vellum-markdown-editor",
   "displayName": "Vellum Markdown Editor",
   "description": "A live WYSIWYG Markdown editor for VS Code with Pele-rendered diagrams and hardened webviews. A modified version of Obsidian-style Markdown Live Editor by Thinh Vu.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "dreamlab-ai",
   "author": {
     "name": "DreamLab AI Consulting Ltd"
@@ -74,6 +74,10 @@
           "type": "webview",
           "id": "markdownLive.fileBrowser",
           "name": "Notes"
+        },
+        {
+          "id": "markdownLive.backlinks",
+          "name": "Backlinks"
         }
       ]
     },
@@ -102,6 +106,41 @@
           "command": "markdown-live.refreshSidebar",
           "when": "view == markdownLive.fileBrowser",
           "group": "navigation@2"
+        },
+        {
+          "command": "markdown-live.refreshBacklinks",
+          "when": "view == markdownLive.backlinks",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "markdown-live.linkMention",
+          "when": "view == markdownLive.backlinks && viewItem == unlinked-mention",
+          "group": "inline@1"
+        },
+        {
+          "command": "markdown-live.openMentionInText",
+          "when": "view == markdownLive.backlinks && viewItem =~ /mention$/",
+          "group": "inline@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "markdown-live.linkMention",
+          "when": "false"
+        },
+        {
+          "command": "markdown-live.openMentionInText",
+          "when": "false"
+        },
+        {
+          "command": "markdown-live.openNote",
+          "when": "false"
+        },
+        {
+          "command": "markdown-live.followWikilink",
+          "when": "false"
         }
       ]
     },
@@ -188,6 +227,34 @@
       {
         "command": "markdown-live.insertTemplate",
         "title": "Markdown Live: Insert Template"
+      },
+      {
+        "command": "markdown-live.refreshBacklinks",
+        "title": "Refresh Backlinks",
+        "category": "Markdown Live",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "markdown-live.linkMention",
+        "title": "Link This Mention",
+        "category": "Markdown Live",
+        "icon": "$(link)"
+      },
+      {
+        "command": "markdown-live.openMentionInText",
+        "title": "Open at Line in Text Editor",
+        "category": "Markdown Live",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "markdown-live.openNote",
+        "title": "Open Note in Live Editor",
+        "category": "Markdown Live"
+      },
+      {
+        "command": "markdown-live.followWikilink",
+        "title": "Follow Wikilink",
+        "category": "Markdown Live"
       }
     ],
     "keybindings": [
@@ -315,6 +382,11 @@
             ],
             "default": "scroll",
             "description": "Table display mode: 'scroll' (horizontal scroll for wide tables) or 'wrap' (word wrap to fit screen)."
+          },
+          "markdownLive.updateLinksOnRename": {
+            "type": "boolean",
+            "default": true,
+            "description": "When a note or folder is renamed or moved, update the wikilinks and Markdown links that point to it."
           }
         }
       },
@@ -406,6 +478,12 @@
           }
         }
       }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "markdownLive.backlinks",
+        "contents": "Open a Markdown note to see what links to it."
+      }
     ]
   },
   "scripts": {
@@ -420,7 +498,7 @@
     "test": "tsc -p tsconfig.test.json && vscode-test-web --browserType=chromium --extensionDevelopmentPath=.",
     "verify-pins": "node scripts/verify-pins.mjs",
     "copy-vendor": "node scripts/verify-pins.mjs --copy",
-    "test:unit": "esbuild test/unit/*.test.ts --bundle --platform=node --format=esm --outdir=.test-out --out-extension:.js=.mjs --log-level=warning && node --test .test-out/*.mjs"
+    "test:unit": "esbuild test/unit/*.test.ts --bundle --platform=node --format=esm --alias:vscode=./test/stubs/vscode.ts --outdir=.test-out --out-extension:.js=.mjs --log-level=warning && node --test .test-out/*.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -35,6 +35,7 @@ import { yamlPlugin } from '../yamlPlugin';
 import { hashtagPlugin } from '../plugins/hashtag';
 import { imagePastePlugin } from '../plugins/imagePaste';
 import { searchPlugin } from '../plugins/search';
+import { wikilink } from '../plugins/wikilink';
 
 const slash = slashFactory('my-slash');
 
@@ -269,6 +270,7 @@ export async function initMilkdown(initialText: string) {
     .use(history)
     .use(clipboard)
     .use(diagram)
+    .use(wikilink)
     .use(mermaidView)
     .use(math)
     .use(htmlView)

@@ -4,10 +4,16 @@ import { insertTemplateCommand } from './template';
 import { registerFileDeletionHandler } from './handlers/fileDeletionHandler';
 import { SidebarProvider } from './sidebarProvider';
 import { NoteManager } from './noteManager';
+import { registerLinks } from './links/register';
 
 export function activate(context: vscode.ExtensionContext) {
   // Register the custom editor provider
   context.subscriptions.push(MarkdownLiveProvider.register(context));
+
+  // Link index, Backlinks panel, link updates on rename, wikilinks in text
+  const linkIndex = registerLinks(context);
+  MarkdownLiveProvider.linkIndex = linkIndex;
+  context.subscriptions.push(linkIndex.onDidChange(() => MarkdownLiveProvider.postLinkState()));
 
   // Register file deletion handler for cleaning up attachments
   registerFileDeletionHandler(context);

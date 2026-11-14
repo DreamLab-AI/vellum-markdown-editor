@@ -40,7 +40,9 @@ These screenshots show the installed extension on Linux. Open the
   a folder.
 - **Images.** Paste or drop an image to save it under a configured directory; rename it from
   the context menu.
-- **Wikilinks and outline.** Type `[[` to link another note; a fly-out outline tracks headings.
+- **Wikilinks and backlinks.** `[[Note]]` links that resolve by name, a Backlinks panel, and
+  links that follow a note when it is renamed. See [Links and backlinks](#links-and-backlinks).
+- **Outline.** A fly-out outline tracks headings.
 - **Sidebar.** Recent notes, the whole workspace, and bookmarks.
 - **PDF export.** Paginated preview with header, footer, page numbers and an optional contents
   page.
@@ -66,6 +68,33 @@ Mermaid stays the source syntax, so your documents do not change. Pele targets M
 syntax and lays diagrams out with its own engine, so a diagram can look different from
 Mermaid's rendering. Mermaid themes, `%%{init}%%` directives and click handlers are not
 honoured.
+
+## Links and backlinks
+
+Vellum links notes the way Obsidian does, and stores them as plain `[[wikilinks]]` in the file.
+
+- **Write a link.** Type `[[` to pick a note, or type a name that does not exist yet. Typing a
+  closing `]]` by hand works too. `[[Note#Heading]]`, `[[Note|shown text]]` and `![[Note]]` are
+  kept exactly as written.
+- **Follow a link.** Click it. A link to a note that does not exist is shown dashed, and
+  clicking it creates the note, in `markdownLive.defaultNoteDirectory` if set, otherwise beside
+  the note you are in.
+- **Resolution.** `[[Note]]` finds `Note.md` anywhere in the workspace, ignoring case.
+  `[[folder/Note]]` narrows it. When two notes share a name, Vellum writes the shortest path
+  that is unambiguous.
+- **Backlinks panel.** In the Markdown Live sidebar. For the note in focus it lists *linked
+  mentions* (every line in another note that links here, wikilink or Markdown link) and
+  *unlinked mentions* (its name appearing as plain text), with a button to turn a mention into
+  a link.
+- **Rename safely.** Rename or move a note or a folder in the Explorer and every link to it is
+  rewritten in the same step, so one undo reverts both. Headings and shown text are kept; links
+  that still resolve are left alone. Turn this off with `markdownLive.updateLinksOnRename`.
+- **In the plain text editor too.** Wikilinks are clickable and `[[` completes note names.
+
+Limits: `![[Note]]` renders as a link, not an inline copy of the note. Heading links open the
+note but do not scroll to the heading. There is no graph view, no hover preview and no block
+references. A wikilink is edited by deleting and retyping it, or in source mode. Inside a table
+write the pipe as `\|`. Links resolve within one workspace folder.
 
 ## Status
 
@@ -151,6 +180,7 @@ generate `.vscode/print-preview.html`, open it in your browser and use **Ctrl+P*
 | `markdownLive.printPageNumberFormat` | `{page}` | PDF page numbering |
 | `markdownLive.printFontFamily` | empty | Font for PDF export |
 | `markdownLive.printAutoTOC` | `false` | Insert a contents page when exporting |
+| `markdownLive.updateLinksOnRename` | `true` | Rewrite links when a note or folder is renamed or moved |
 
 ## Privacy
 

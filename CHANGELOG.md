@@ -5,6 +5,21 @@ All notable changes to Vellum Markdown Editor are documented here, followed by u
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.0 — links and backlinks (2026-11-14)
+
+### Added
+* **Wikilinks are real.** `[[Note]]`, `[[Note#Heading]]`, `[[Note|text]]` and `![[Note]]` are an editor node, saved byte for byte. Previously `[[` inserted a standard Markdown link, and hand-typed wikilinks were at risk of bracket escaping on save.
+* **Backlinks panel** in the sidebar: linked mentions and unlinked mentions for the note in focus, with one-click linking of a mention.
+* **Links follow renames.** Renaming or moving a note or folder rewrites the wikilinks and Markdown links that would break, in the same undo step. Setting: `markdownLive.updateLinksOnRename`.
+* Clicking a link to a missing note creates it. Missing targets are shown dashed.
+* Plain text editor: clickable wikilinks and `[[` completion.
+
+### Changed
+* The `[[` picker lists notes by their shortest unambiguous name and accepts a new name.
+
+### Not yet verified
+* The Backlinks panel, rename handling and text-editor providers are covered by unit tests against a stand-in for the VS Code API, and the editor node by a browser check. They have not been run inside VS Code.
+
 ## Unreleased
 
 ### Fixed

@@ -127,7 +127,12 @@ function setupImageObserver() {
     if (link) {
       e.preventDefault();
       e.stopPropagation();
-      if (e.type === 'click' && vscode) {
+      if (e.type === 'click' && vscode && link.dataset.type === 'wikilink') {
+        // A wikilink opens its note, creating it first if it does not exist.
+        if (link.dataset.target) {
+          vscode.postMessage({ type: 'openWikilink', target: link.dataset.target, heading: link.dataset.heading || '' });
+        }
+      } else if (e.type === 'click' && vscode) {
         const hrefAttr = link.getAttribute('href');
         const hrefProp = link.href;
         vscode.postMessage({ type: 'openLink', value: hrefAttr, resolvedValue: hrefProp });

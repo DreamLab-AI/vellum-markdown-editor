@@ -1,3 +1,5 @@
+import { setUnresolvedTargets } from './plugins/wikilink';
+import { splitWikilinks } from '../src/links/wikilink';
 import {
   callCommand,
   insert,
@@ -62,6 +64,30 @@ export function setupMessageListener() {
         document.body.className = themeClass;
         break;
       
+      case 'linkState':
+        setUnresolvedTargets(message.unresolved);
+        break;
+
+      case 'insertWikilink':
+        // The `[[` that opened the picker is replaced by the finished link.
+        if (state.editor && typeof message.text === 'string') {
+          state.forceSync = true;
+          state.editor.action((ctx) => {
+            const view = ctx.get(editorViewCtx);
+            const { from } = view.state.selection;
+            const before = view.state.doc.textBetween(Math.max(0, from - 2), from);
+            const cut = before === '[[' ? 2 : before.endsWith('[') ? 1 : 0;
+            const [part] = splitWikilinks(message.text);
+            if (part && typeof part !== 'string') {
+              const node = view.state.schema.nodes.wikilink.create(part);
+              view.dispatch(view.state.tr.replaceWith(from - cut, from, node).scrollIntoView());
+              view.focus();
+            }
+          });
+          setTimeout(() => { state.forceSync = false; }, 100);
+        }
+        break;
+
       case 'insertText':
         if (state.isSourceMode && state.cmView) {
           const selection = state.cmView.state.selection.main;

@@ -2,11 +2,23 @@ import { getHtmlForWebview } from './webview/template';
 import { handleWebviewMessage } from './handlers/messageHandler';
 import * as vscode from 'vscode';
 import { newNonce } from './security';
+import type { LinkIndex } from './links/linkIndex';
 
 export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
   public static currentPanel: vscode.WebviewPanel | undefined;
   public static currentDocument: vscode.TextDocument | undefined;
   public static openPanels: { panel: vscode.WebviewPanel, document: vscode.TextDocument }[] = [];
+  public static linkIndex: LinkIndex | undefined;
+
+  /** Tell each open editor which of its wikilinks point at no note. */
+  public static postLinkState(only?: vscode.WebviewPanel) {
+    const index = MarkdownLiveProvider.linkIndex;
+    if (!index) return;
+    for (const { panel, document } of MarkdownLiveProvider.openPanels) {
+      if (only && panel !== only) continue;
+      void panel.webview.postMessage({ type: 'linkState', unresolved: index.unresolvedTargets(document.uri) });
+    }
+  }
 
   /** The extension's install location (bundled assets live under dist/). */
   public get extensionUri(): vscode.Uri {
