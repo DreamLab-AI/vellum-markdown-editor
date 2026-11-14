@@ -5,6 +5,12 @@ All notable changes to Vellum Markdown Editor are documented here, followed by u
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+* **`vellum-graph`** (`npm run graph -- <command>`): the link graph from a terminal, for Claude Code, other agents and scripts that cannot query the running extension. Backlinks, outgoing links, unlinked mentions, unresolved links, link context, resolution, edges, orphans, and rename planning, with `--apply` to rewrite links and move a note or folder outside VS Code. It reuses the extension's parser and resolver through a new VS Code-free `Vault` (`src/links/vault.ts`). Not part of the VSIX.
+* `AGENTS.md` (and a `CLAUDE.md` that imports it): a briefing for coding agents on the repository and on reaching Vellum's features.
+
 ## v0.4.0 — Claude Code compatibility (2026-11-14)
 
 ### Added

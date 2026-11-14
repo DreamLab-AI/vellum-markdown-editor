@@ -563,6 +563,7 @@
     "lint": "eslint \"{src,webview}/**/*.ts\"",
     "format": "prettier --write \"{src,webview}/**/*.ts\"",
     "test": "tsc -p tsconfig.test.json && vscode-test-web --browserType=chromium --extensionDevelopmentPath=.",
+    "graph": "esbuild src/cli/vellum-graph.ts --bundle --platform=node --format=esm --outfile=out/vellum-graph.mjs --log-level=warning && node out/vellum-graph.mjs",
     "verify-pins": "node scripts/verify-pins.mjs",
     "copy-vendor": "node scripts/verify-pins.mjs --copy",
     "test:unit": "esbuild test/unit/*.test.ts --bundle --platform=node --format=esm --alias:vscode=./test/stubs/vscode.ts --outdir=.test-out --out-extension:.js=.mjs --log-level=warning && node --test .test-out/*.mjs"

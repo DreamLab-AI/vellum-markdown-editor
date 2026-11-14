@@ -76,7 +76,8 @@ open the same source lines beside Vellum.
 - **PDF export.** Paginated preview with header, footer, page numbers and an optional contents
   page.
 - **Works with Claude Code.** Send a selection to Claude as a file reference with its line
-  range, keep your place when Claude edits the note, and hand Claude a note's backlinks. See
+  range, keep your place when Claude edits the note, and hand Claude a note's backlinks. Agents
+  can query the link graph themselves with `vellum-graph`. See
   [Working with Claude Code](#working-with-claude-code).
 
 ## What differs from upstream
@@ -168,6 +169,50 @@ in Vellum shows a notice in place of the editor until the diff is closed. Line m
 in source view and matched by content in the rendered view, so a selection inside one of two
 identical lines can land on the nearer one.
 
+### The link graph from a terminal (`vellum-graph`)
+
+The commands above push context from Vellum to Claude. Nothing goes the other way: Vellum is a
+web extension with no server, so Claude Code (or any agent or script) cannot query the running
+extension. `vellum-graph` fills that gap. It reads the notes under a folder from disk and
+answers with the extension's own parser and resolver, so its results match the Backlinks panel.
+
+```sh
+npm run graph -- backlinks Project            # who links here, as @path#line references
+npm run graph -- context notes/plan.md        # the "Copy Note and Its Links as AI Context" text
+npm run graph -- rename Project.md archive/Roadmap.md          # dry run: moves and link edits
+npm run graph -- rename Project.md archive/Roadmap.md --apply  # rewrite links, then move
+npm run graph -- graph --root ~/notes --json  # every edge, for other tools
+```
+
+| Command | Answers |
+|---|---|
+| `notes` | Every note the extension would index |
+| `links <note>` | Links in a note and where each resolves |
+| `backlinks <note>` | Lines in other notes that link to this one (wikilinks and Markdown links) |
+| `mentions <note>` | The note's name as plain text elsewhere (unlinked mentions) |
+| `unresolved [note]` | Wikilinks to notes that do not exist |
+| `context <note>` | The link-context text, exactly as the Backlinks panel copies it |
+| `resolve <target> [--from <note>]` | The note `[[target]]` leads to, written from `--from` |
+| `linktext <note>` | The shortest unambiguous wikilink for a note |
+| `graph` | Every note-to-note edge |
+| `orphans` | Notes with no links in or out |
+| `rename <from> <to> [--apply]` | Link edits that keep links working after moving a note or folder |
+
+- A `<note>` is a path relative to the root (`notes/plan.md`) or anything a wikilink could say
+  (`plan`, `notes/plan`).
+- `--root DIR` is the folder treated as the workspace folder; it defaults to the current
+  directory. Links resolve within it, as in the extension.
+- `--json` prints machine-readable output: lines are 1-based, `start`/`end` columns 0-based.
+- Exit status is 0 on success, 1 when a note or target is not found, 2 on a usage error.
+- **Rename outside VS Code with `rename --apply`.** VS Code only updates links for renames made
+  in its own Explorer. `git mv`, `mv` or an agent's file tools leave the links broken.
+  `--apply` refuses to overwrite an existing file. It writes the link edits first and moves the
+  file second, so commit first or review with the dry run.
+
+The CLI bundles to `out/vellum-graph.mjs` on each run. That file is gitignored and not shipped in
+the VSIX. It reads files only, so unsaved edits in an open editor are not seen, and symlinked
+folders are not followed.
+
 ## Status
 
 Not yet published to the VS Code Marketplace; [PUBLISHING.md](PUBLISHING.md) has the steps.
@@ -175,7 +220,8 @@ Not yet published to the VS Code Marketplace; [PUBLISHING.md](PUBLISHING.md) has
 The current build was exercised in desktop VS Code 1.106.3 on Linux: live/source
 editing and saving, backlinks and mention linking, missing-note creation, Explorer
 rename link updates, templates, selection references and reveal, link context, outside
-file changes, and print export. All 51 unit tests pass. The [test report](docs/TESTING.md)
+file changes, and print export. All 58 unit tests pass, including the headless
+`vellum-graph` queries. The [test report](docs/TESTING.md)
 distinguishes desktop checks from unit coverage and lists remaining gaps.
 
 PDF export produces an A4 document, but dark-theme colours currently give pale text
@@ -188,7 +234,7 @@ Requires Node 20 or later.
 
 ```sh
 npm ci --ignore-scripts      # install scripts are not needed to build
-npm run test:unit            # 51 tests
+npm run test:unit            # 58 tests
 npm run package              # verifies the pinned assets, then bundles into dist/
 npx @vscode/vsce package     # produces a .vsix
 code --install-extension vellum-markdown-editor-*.vsix
