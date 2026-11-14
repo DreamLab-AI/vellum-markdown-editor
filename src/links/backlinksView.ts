@@ -28,7 +28,7 @@ interface MentionNode {
   text: string;
 }
 
-function activeNote(): vscode.Uri | undefined {
+export function activeNote(): vscode.Uri | undefined {
   const input = vscode.window.tabGroups.activeTabGroup.activeTab?.input;
   const uri =
     input instanceof vscode.TabInputCustom || input instanceof vscode.TabInputText ? input.uri : undefined;

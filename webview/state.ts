@@ -9,6 +9,12 @@ export const vscode = typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi(
 export const state = {
     isUpdatingFromVSCode: false,
     isSourceMode: false,
+    forceSync: false,
+    // What the host last sent, and the editor's own serialisation of it. An
+    // update from the host must never be echoed back as an edit.
+    lastExternalText: null as string | null,
+    externalSerialised: null as string | null,
+    editedSinceExternal: false,
     cmView: null as EditorView | null,
     editor: null as Editor | null,
     currentZoom: 14,

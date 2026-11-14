@@ -1,3 +1,7 @@
+import { serializerCtx } from '@milkdown/core';
+import { TextSelection } from '@milkdown/prose/state';
+import { clampPosition } from '../src/ai/reference';
+import { currentSelectionInfo } from './utils/selectionInfo';
 import { setUnresolvedTargets } from './plugins/wikilink';
 import { splitWikilinks } from '../src/links/wikilink';
 import {
@@ -19,6 +23,17 @@ import { updateMetadataUI, frontmatterRegex } from './ui/metadata';
 import { initCodeMirror } from './editor/codemirror';
 import { insertFootnote } from './utils/markdown';
 
+/** The element that actually scrolls the document. */
+function scrollContainer(): Element | null {
+  let el: Element | null = document.querySelector('.ProseMirror');
+  while (el && el !== document.documentElement) {
+    const overflow = getComputedStyle(el).overflowY;
+    if ((overflow === 'auto' || overflow === 'scroll') && el.scrollHeight > el.clientHeight) return el;
+    el = el.parentElement;
+  }
+  return document.scrollingElement;
+}
+
 export function setupMessageListener() {
   window.addEventListener('message', async (event) => {
     const message = event.data;
@@ -28,10 +43,17 @@ export function setupMessageListener() {
           if (!state.cmView) {
             initCodeMirror(message.text);
           } else {
+            if (state.cmView.state.doc.toString() === message.text) break;
             state.isUpdatingFromVSCode = true;
+            // An external edit (an AI assistant, git) replaces the text; keep
+            // the cursor and the scroll position where they were.
+            const cmHead = state.cmView.state.selection.main.head;
+            const cmScroll = state.cmView.scrollDOM.scrollTop;
             state.cmView.dispatch({
               changes: { from: 0, to: state.cmView.state.doc.length, insert: message.text },
+              selection: { anchor: clampPosition(cmHead, message.text.length) },
             });
+            state.cmView.scrollDOM.scrollTop = cmScroll;
             setTimeout(() => {
               state.isUpdatingFromVSCode = false;
             }, 50);
@@ -49,9 +71,40 @@ export function setupMessageListener() {
               state.currentFrontmatter = '';
               updateMetadataUI('');
             }
+            if (message.text === state.lastExternalText && !state.editedSinceExternal) {
+              // The same text again and no edit in between: do not rebuild, so
+              // the cursor stays put.
+              state.isUpdatingFromVSCode = false;
+              break;
+            }
+            state.lastExternalText = message.text;
+            state.editedSinceExternal = false;
             state.lastMarkdown = markdownToRender;
 
+            // An external edit (an AI assistant, git) replaces the document;
+            // keep the cursor and the scroll position where they were.
+            const scroller = scrollContainer();
+            const scrollTop = scroller?.scrollTop ?? 0;
+            let anchor = -1;
+            state.editor.action((ctx) => { anchor = ctx.get(editorViewCtx).state.selection.anchor; });
+
             state.editor.action(replaceAll(markdownToRender));
+
+            state.editor.action((ctx) => {
+              const view = ctx.get(editorViewCtx);
+              if (anchor < 0) return;
+              try {
+                const pos = view.state.doc.resolve(clampPosition(anchor, view.state.doc.content.size));
+                view.dispatch(view.state.tr.setSelection(TextSelection.near(pos)));
+              } catch { /* the old position has no equivalent */ }
+              // Remember how the editor itself writes this document, so the
+              // debounced change listener can tell it from a real edit.
+              try { state.externalSerialised = ctx.get(serializerCtx)(view.state.doc); } catch { state.externalSerialised = null; }
+            });
+            if (scroller) {
+              scroller.scrollTop = scrollTop;
+              requestAnimationFrame(() => { scroller.scrollTop = scrollTop; });
+            }
             setTimeout(() => {
               state.isUpdatingFromVSCode = false;
             }, 50);
@@ -185,21 +238,10 @@ export function handleVSCodeCommand(command: string) {
 
   switch (command) {
     case 'sendToAI':
-      withForceSync(() => {
-        state.editor!.action((ctx) => {
-          const view = ctx.get(editorViewCtx);
-          const { state: pmState } = view;
-          const selectedText = pmState.doc.textBetween(
-            pmState.selection.from,
-            pmState.selection.to,
-            '\n',
-          );
-
-          if (selectedText && vscode) {
-            vscode.postMessage({ type: 'sendToAI', text: selectedText });
-          }
-        });
-      });
+    case 'revealSelection':
+    case 'copyReference':
+      // The host turns this into a file reference with a line range.
+      if (vscode) vscode.postMessage({ type: command, ...currentSelectionInfo() });
       break;
     case 'insertLink':
       withForceSync(() => state.editor!.action(callCommand(toggleLinkCommand.key)));

@@ -46,7 +46,9 @@ These screenshots show the installed extension on Linux. Open the
 - **Sidebar.** Recent notes, the whole workspace, and bookmarks.
 - **PDF export.** Paginated preview with header, footer, page numbers and an optional contents
   page.
-- **Send to AI context.** Send the selection, with its file and line range, to a chat panel.
+- **Works with Claude Code.** Send a selection to Claude as a file reference with its line
+  range, keep your place when Claude edits the note, and hand Claude a note's backlinks. See
+  [Working with Claude Code](#working-with-claude-code).
 
 ## What differs from upstream
 
@@ -96,22 +98,57 @@ note but do not scroll to the heading. There is no graph view, no hover preview 
 references. A wikilink is edited by deleting and retyping it, or in source mode. Inside a table
 write the pipe as `\|`. Links resolve within one workspace folder.
 
+## Working with Claude Code
+
+Vellum is a custom editor. While it has focus VS Code has no active *text* editor, so an
+assistant that reads "the open file and the selection" sees neither. Vellum closes that gap
+for the [Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code)
+(`anthropic.claude-code`); the same commands work with any assistant that accepts text.
+
+| What you want | Command | Shortcut |
+|---|---|---|
+| Give Claude the selection | **Send Selection to AI Assistant** | `Ctrl + Shift + L` (`Cmd + Shift + L`) |
+| See the same lines in a normal text editor | **Reveal Selection in Text Editor** | `Ctrl + Alt + Shift + T` (`Cmd + Ctrl + Shift + T`) |
+| Paste a reference yourself | **Copy @-Reference to Selection** | — |
+| Give Claude a note and everything linked to it | **Copy Note and Its Links as AI Context** | button on the Backlinks panel |
+
+- **Selections become references.** A selection in the rendered note is mapped back to its lines
+  in the Markdown file and written as `@notes/plan.md#18-19`, the form Claude's prompt box
+  accepts. With nothing selected the reference is the whole file. The reference is always copied
+  to the clipboard as well.
+- **How it reaches Claude** is set by `markdownLive.claudeDelivery`:
+  - `selection` (default): the note opens in a text editor beside Vellum with those lines
+    selected. Claude attaches the open file and selection by itself, and if Claude's "Insert
+    @-Mention Reference" command is available Vellum runs it.
+  - `newTab`: a new Claude tab opens with the reference pre-filled, not sent.
+  - `clipboard`: copy only.
+- **Claude's edits appear in place.** When Claude, or anything else, changes the file, the note
+  updates and the cursor and scroll position stay where they were. Vellum does not write the
+  file back after an outside change, so Claude's formatting is kept and the note is not marked
+  as modified. Upstream re-saved the file in its own formatting about 200 ms after every outside
+  change, which could make an assistant's next edit fail with "file has changed".
+- **Link context.** *Copy Note and Its Links as AI Context* copies the note, the notes that link
+  to it (with line numbers), the notes it links to and any links to missing notes, as
+  `@`-references. With Claude installed it offers to open them in a new Claude tab.
+- **Other assistants.** `markdownLive.aiTarget` chooses `claude`, `antigravity`, `chat` (the
+  built-in chat) or `clipboard`; `auto` picks the first that is installed.
+
+Limits: with nothing selected and Vellum focused, Claude does not see which note is open; use
+Reveal or Send. While Claude is showing a proposed change to a note as a diff, opening that note
+in Vellum shows a notice in place of the editor until the diff is closed. Line mapping is exact
+in source view and matched by content in the rendered view, so a selection inside one of two
+identical lines can land on the nearer one.
+
 ## Status
 
-This is a source release, **not published to the VS Code Marketplace**. A locally packaged
-VSIX was installed and exercised in VS Code 1.106.3 on Linux on 14 November 2026. Testing
-found and fixed duplicate command registration, a startup content-loading race, and broken
-script insertion in the print preview. See [CHANGELOG.md](CHANGELOG.md).
+Not yet published to the VS Code Marketplace; [PUBLISHING.md](PUBLISHING.md) has the steps.
 
-Verified in VS Code: rendered Markdown, editing and saving to disk, source mode, a Pele
-flowchart, maths, tables, the notes sidebar, and image paste with a saved, loaded local image.
-The generated print preview was also checked in headless Chromium: pagination completed
-without JavaScript errors and produced a one-page A4 PDF. Print colours still need polish;
-the dark editor theme can produce faint text on a white page.
-
-These are smoke checks, not a complete compatibility test. macOS, Windows, remote
-workspaces, AI context, templates, image renaming and the interactive browser print dialog
-were not exercised in this pass.
+The editor itself (rendering, diagrams, wikilinks, selection mapping, reloading after an outside
+edit) is tested in Chromium under the shipped content security policy, and the logic behind
+links, renames and references by 48 unit tests. The parts that need VS Code itself (the
+Backlinks panel, rename handling and delivery to Claude Code) are tested against a stand-in for
+the VS Code API and are listed under "Not yet verified" in the [changelog](CHANGELOG.md) until
+they have been confirmed in VS Code. Please report anything that misbehaves.
 
 ## Build and install
 
@@ -119,7 +156,7 @@ Requires Node 20 or later.
 
 ```sh
 npm ci --ignore-scripts      # install scripts are not needed to build
-npm run test:unit            # 15 tests
+npm run test:unit            # 48 tests
 npm run package              # verifies the pinned assets, then bundles into dist/
 npx @vscode/vsce package     # produces a .vsix
 code --install-extension vellum-markdown-editor-*.vsix
@@ -154,7 +191,8 @@ generate `.vscode/print-preview.html`, open it in your browser and use **Ctrl+P*
 | Command | macOS | Windows and Linux |
 |---|---|---|
 | Open live editor | `Cmd + Ctrl + Shift + M` | `Ctrl + Alt + Shift + M` |
-| Send to AI context | `Cmd + Shift + L` | `Ctrl + Shift + L` |
+| Send selection to AI assistant | `Cmd + Shift + L` | `Ctrl + Shift + L` |
+| Reveal selection in text editor | `Cmd + Ctrl + Shift + T` | `Ctrl + Alt + Shift + T` |
 | Insert link | `Cmd + K` | `Ctrl + K` |
 | Insert table | `Cmd + Option + T` | `Ctrl + Shift + T` |
 | Insert code block | `Cmd + Option + C` | `Ctrl + Shift + C` |
@@ -181,6 +219,8 @@ generate `.vscode/print-preview.html`, open it in your browser and use **Ctrl+P*
 | `markdownLive.printFontFamily` | empty | Font for PDF export |
 | `markdownLive.printAutoTOC` | `false` | Insert a contents page when exporting |
 | `markdownLive.updateLinksOnRename` | `true` | Rewrite links when a note or folder is renamed or moved |
+| `markdownLive.aiTarget` | `auto` | Assistant for Send Selection: `auto`, `claude`, `antigravity`, `chat`, `clipboard` |
+| `markdownLive.claudeDelivery` | `selection` | How a selection reaches Claude Code: `selection`, `newTab`, `clipboard` |
 
 ## Privacy
 

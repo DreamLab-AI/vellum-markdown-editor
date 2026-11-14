@@ -5,6 +5,7 @@ import { registerFileDeletionHandler } from './handlers/fileDeletionHandler';
 import { SidebarProvider } from './sidebarProvider';
 import { NoteManager } from './noteManager';
 import { registerLinks } from './links/register';
+import { copyLinkContext } from './ai/assistant';
 
 export function activate(context: vscode.ExtensionContext) {
   // Register the custom editor provider
@@ -13,7 +14,10 @@ export function activate(context: vscode.ExtensionContext) {
   // Link index, Backlinks panel, link updates on rename, wikilinks in text
   const linkIndex = registerLinks(context);
   MarkdownLiveProvider.linkIndex = linkIndex;
-  context.subscriptions.push(linkIndex.onDidChange(() => MarkdownLiveProvider.postLinkState()));
+  context.subscriptions.push(
+    linkIndex.onDidChange(() => MarkdownLiveProvider.postLinkState()),
+    vscode.commands.registerCommand('markdown-live.copyLinkContext', () => copyLinkContext(linkIndex)),
+  );
 
   // Register file deletion handler for cleaning up attachments
   registerFileDeletionHandler(context);
@@ -51,6 +55,8 @@ export function activate(context: vscode.ExtensionContext) {
   // Commands to forward to active webview
   const commands = [
     'sendToAI',
+    'revealSelection',
+    'copyReference',
     'insertLink',
     'save',
     'insertTable',

@@ -1,0 +1,47 @@
+name: Publish to the VS Code Marketplace
+
+# Publishes with Marketplace Trusted Publishing: GitHub's OIDC token is
+# exchanged for a short-lived Marketplace credential, so no token is stored in
+# this repository. It needs a Trusted Publishing policy on the `dreamlab-ai`
+# publisher naming this repository and this workflow file. See PUBLISHING.md.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      pre_release:
+        description: Publish as a pre-release
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: marketplace
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run test:unit
+      - name: The release tag must match package.json
+        if: github.event_name == 'release'
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json ($version)"
+            exit 1
+          fi
+      # `vsce publish` runs `vscode:prepublish`, which verifies the pinned
+      # assets and builds dist/.
+      - name: Publish
+        run: npx @vscode/vsce publish --oidc ${{ (inputs.pre_release || github.event.release.prerelease) && '--pre-release' || '' }}

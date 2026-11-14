@@ -2,7 +2,7 @@
   "name": "vellum-markdown-editor",
   "displayName": "Vellum Markdown Editor",
   "description": "A live WYSIWYG Markdown editor for VS Code with Pele-rendered diagrams and hardened webviews. A modified version of Obsidian-style Markdown Live Editor by Thinh Vu.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "dreamlab-ai",
   "author": {
     "name": "DreamLab AI Consulting Ltd"
@@ -111,6 +111,11 @@
           "command": "markdown-live.refreshBacklinks",
           "when": "view == markdownLive.backlinks",
           "group": "navigation"
+        },
+        {
+          "command": "markdown-live.copyLinkContext",
+          "when": "view == markdownLive.backlinks",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -152,7 +157,8 @@
       },
       {
         "command": "markdown-live.sendToAI",
-        "title": "Send to AI Agent Context"
+        "title": "Send Selection to AI Assistant",
+        "category": "Markdown Live"
       },
       {
         "command": "markdown-live.newNote",
@@ -255,6 +261,23 @@
         "command": "markdown-live.followWikilink",
         "title": "Follow Wikilink",
         "category": "Markdown Live"
+      },
+      {
+        "command": "markdown-live.revealSelection",
+        "title": "Reveal Selection in Text Editor",
+        "category": "Markdown Live",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "markdown-live.copyReference",
+        "title": "Copy @-Reference to Selection",
+        "category": "Markdown Live"
+      },
+      {
+        "command": "markdown-live.copyLinkContext",
+        "title": "Copy Note and Its Links as AI Context",
+        "category": "Markdown Live",
+        "icon": "$(references)"
       }
     ],
     "keybindings": [
@@ -358,6 +381,12 @@
         "command": "markdown-live.insertTemplate",
         "key": "ctrl+shift+e",
         "mac": "cmd+shift+e"
+      },
+      {
+        "command": "markdown-live.revealSelection",
+        "key": "ctrl+alt+shift+t",
+        "mac": "cmd+ctrl+shift+t",
+        "when": "activeCustomEditorId == 'markdownLive.editor'"
       }
     ],
     "configuration": [
@@ -387,6 +416,40 @@
             "type": "boolean",
             "default": true,
             "description": "When a note or folder is renamed or moved, update the wikilinks and Markdown links that point to it."
+          },
+          "markdownLive.aiTarget": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "claude",
+              "antigravity",
+              "chat",
+              "clipboard"
+            ],
+            "default": "auto",
+            "enumDescriptions": [
+              "Claude Code if installed, then Antigravity, then the built-in chat.",
+              "Claude Code (anthropic.claude-code).",
+              "Antigravity.",
+              "The built-in VS Code chat.",
+              "Copy the reference and text to the clipboard only."
+            ],
+            "description": "Where \"Send Selection to AI Assistant\" sends the selection."
+          },
+          "markdownLive.claudeDelivery": {
+            "type": "string",
+            "enum": [
+              "selection",
+              "newTab",
+              "clipboard"
+            ],
+            "default": "selection",
+            "enumDescriptions": [
+              "Show the selection in a text editor beside the note, where Claude Code picks it up, and insert an @-mention if Claude offers that command.",
+              "Open a new Claude Code tab with the reference pre-filled.",
+              "Copy the @-reference to the clipboard only."
+            ],
+            "description": "How a selection reaches Claude Code. The @-reference is always copied to the clipboard as well."
           }
         }
       },

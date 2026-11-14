@@ -21,3 +21,5 @@ test/**
 webview-test.js
 tsconfig.test.json
 eslint.config.mjs
+PUBLISHING.md
+.github/**

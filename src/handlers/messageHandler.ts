@@ -3,6 +3,7 @@ import { MarkdownLiveProvider } from '../editorProvider';
 import { BookmarkManager } from '../bookmarkManager';
 import { inlineScript, safeImageExt } from '../security';
 import { followWikilink } from '../links/register';
+import { copyReference, revealSelection, selectionFromMessage, sendToAssistant } from '../ai/assistant';
 
 function getRelativePath(fromPath: string, toPath: string): string {
   const fromParts = fromPath.split('/').filter(Boolean);
@@ -106,24 +107,13 @@ export async function handleWebviewMessage(
           break;
         }
         case 'sendToAI':
-          try {
-            const fileName = document.uri.path.split('/').pop() || 'markdown_context.md';
-            const richContext = {
-              uri: document.uri,
-              name: fileName,
-              label: 'Selection from ' + fileName,
-              text: e.text,
-              content: e.text,
-              value: e.text,
-              type: 'file',
-              kind: 'file'
-            };
-            await vscode.commands.executeCommand('antigravity.addContext', richContext);
-          } catch (err) {
-            // Fallback if Antigravity API is not available
-            vscode.env.clipboard.writeText(e.text);
-            vscode.commands.executeCommand('workbench.action.chat.open', e.text);
-          }
+          await sendToAssistant(document, selectionFromMessage(e));
+          break;
+        case 'revealSelection':
+          await revealSelection(document, selectionFromMessage(e));
+          break;
+        case 'copyReference':
+          await copyReference(document, selectionFromMessage(e));
           break;
 
         case 'toggleEditor':

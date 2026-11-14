@@ -46,7 +46,15 @@ export async function initMilkdown(initialText: string) {
       ctx.set(defaultValueCtx, initialText);
 
       ctx.get(listenerCtx).markdownUpdated((ctx, markdown, prevMarkdown) => {
+        // The listener is debounced, so it also fires after an update from the
+        // host has settled. That is not an edit: sending it back would rewrite
+        // the file in the serialiser's formatting and mark it dirty.
+        if (!state.editedSinceExternal && state.externalSerialised !== null && markdown === state.externalSerialised) {
+          updateOutline(markdown);
+          return;
+        }
         if (!state.isUpdatingFromVSCode) {
+          state.editedSinceExternal = true;
           updateOutline(markdown);
           const match = markdown.match(frontmatterRegex);
           let markdownToRender = markdown;

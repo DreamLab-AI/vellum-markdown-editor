@@ -5,6 +5,21 @@ All notable changes to Vellum Markdown Editor are documented here, followed by u
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.4.0 — Claude Code compatibility (2026-11-14)
+
+### Added
+* **Send Selection to AI Assistant** now produces a file reference with a line range (`@path#18-19`) by mapping the rendered selection back to the Markdown source, and delivers it to Claude Code (`anthropic.claude-code`) when installed. Settings: `markdownLive.aiTarget`, `markdownLive.claudeDelivery`.
+* **Reveal Selection in Text Editor** and **Copy @-Reference to Selection**.
+* **Copy Note and Its Links as AI Context**: the note, its backlinks, its outgoing links and its missing links, as references.
+* CI workflow, and a Marketplace publish workflow using Trusted Publishing (`PUBLISHING.md`).
+
+### Fixed
+* After any change to the file from outside the editor, the editor wrote the file back in its own formatting about 200 ms later, marking it modified. Outside changes are no longer echoed.
+* An outside change reset the cursor and scroll position; both are now kept, and an identical update no longer rebuilds the view.
+
+### Not yet verified
+* Delivery to Claude Code (the text editor opening beside, the @-mention command lookup, the `vscode://anthropic.claude-code/open` link) is built from Claude Code's documentation and has not been run against the extension. Selection mapping and reload behaviour were checked in a browser.
+
 ## v0.3.0 — links and backlinks (2026-11-14)
 
 ### Added
