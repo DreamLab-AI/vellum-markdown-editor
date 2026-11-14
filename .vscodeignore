@@ -26,3 +26,5 @@ PUBLISHING.md
 AGENTS.md
 CLAUDE.md
 .agentic-qe/**
+dream.config.json
+.dream-standby

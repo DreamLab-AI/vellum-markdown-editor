@@ -1,0 +1,37 @@
+{
+  "repo": "DreamLab-AI/vellum-markdown-editor",
+  "cron": "0 2 * * *",
+  "slots": [
+    { "deep": "link-graph", "scan": ["wikilink-parse-and-resolve", "rename-edits", "cli-extension-parity", "backlinks-and-mentions"] },
+    { "deep": "webview-editor", "scan": ["milkdown-plugins", "source-view-round-trip", "diagram-rendering", "search-and-image-paste"] },
+    { "deep": "security-boundary", "scan": ["csp-and-nonces", "escaping-in-security-ts", "webview-message-validation", "vendored-pin-integrity"] },
+    { "deep": "ai-delivery", "scan": ["selection-to-source-line-mapping", "link-context-block", "assistant-delivery-modes"] },
+    { "deep": "notes-workspace", "scan": ["sidebar-and-note-manager", "templates", "bookmarks-and-annotations", "file-deletion-handling"] }
+  ],
+  "bonusModuli": { "7": "security-adversarial", "30": "packaging-and-vsix-contents" },
+  "controlPlaneProbes": ["node --version"],
+  "buildStep": { "cmd": "npm ci --ignore-scripts --no-audit --no-fund --loglevel=error 2>&1 | tail -10", "degradeOnWasmFailure": false },
+  "evaluatorEntrypoints": {
+    "unit-tests": "npm run test:unit --loglevel=error 2>&1 | tail -40",
+    "package": "npm run package --loglevel=error 2>&1 | grep -E 'PIN|rror' | tail -10; test \"${PIPESTATUS[0]}\" -eq 0 && wc -c dist/extension.js dist/webview.js",
+    "typecheck": { "cmd": "node_modules/.bin/tsc -p tsconfig.test.json --noEmit 2>&1 | tail -20", "required": false }
+  },
+  "protected": ["scripts/verify-pins.mjs", "test/stubs/**", ".vscodeignore", "docs/TESTING.md"],
+  "extraDisciplines": [
+    "evaluation-is-not-promotion",
+    "witness-every-quantitative-claim",
+    "browser-context: src/ (except src/cli/) and webview/ run in a browser; no fs, path, child_process or sockets there, only vscode.workspace.fs and the vscode API",
+    "pure-modules: parser, resolver, wikilink, vault, ai/reference and security import neither vscode nor the DOM",
+    "cli-parity: link behaviour lives in the pure modules; vault.ts mirrors LinkIndex, and the note pattern, excluded folders and 2 MB cap in src/cli/vellum-graph.ts mirror linkIndex.ts; change both together",
+    "security-posture: strict CSP with nonces, no inline handlers, no unsafe-eval, no network requests or remote fonts; everything interpolated from workspace files is escaped through src/security.ts; vendored assets change only with new pinned digests (a human act)",
+    "stable-ids: never rename markdown-live.* commands or markdownLive.* settings",
+    "changelog: a user-visible change is recorded under Unreleased in CHANGELOG.md and in the README, saying what was not verified",
+    "known-state: the tsc enableFindWidget error and unenforced ESLint/Prettier on older files are recorded baselines, not findings; src/test/extension.test.ts is an upstream placeholder, not evidence",
+    "upstream-handoff: Vellum is a GPL-3.0 fork of thinh-vu's Markdown Live Editor; a fix that belongs upstream is a HANDOFF, and attribution in NOTICE.md and README.upstream.md is never edited",
+    "release-is-human: Marketplace publishing (publish.yml on a GitHub release) and version bumps are never proposed"
+  ],
+  "ledgerPath": "docs/dream-cycle/LEDGER.md",
+  "branchPrefix": "dream/",
+  "labels": ["dream-cycle", "research"],
+  "autoMerge": false
+}
