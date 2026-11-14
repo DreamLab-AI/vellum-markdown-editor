@@ -25,8 +25,9 @@ sits beside the renderer and that every host can use.
 This records the direction agreed in the 14 November 2026 discussion, as amended
 the same day once the code was read against it (see [Amendment](#amendment-14-november-2026)).
 The bounded graph is built in this repository; the [implementation handoff](../handoffs/ontomark-graph.md)
-says what is done and what remains. It does not claim acceptance in an installed
-VS Code, any performance result, or typed-vault compatibility.
+says what is done and what remains. Installed VS Code opening and rendering have been
+checked; full host interaction acceptance, cross-host performance and typed-vault
+compatibility remain open.
 
 ## Context and evidence
 
@@ -55,7 +56,8 @@ amendment: graph package 0.3.0 passes 29 tests, one of them against the released
 `vowl-wasm` bundle; Vellum passes 79 unit tests; and the panel's page ran in
 Chrome under its real content security policy ([docs/TESTING.md](../TESTING.md)).
 No Rust-versus-JavaScript benchmark or cross-host performance claim has been
-verified, and the panel has not run in an installed VS Code. Sorting nodes on
+verified. The installed desktop panel has since drawn a 120-node, 400-link neighbourhood;
+full host interaction acceptance remains open. Sorting nodes on
 each redraw and linear pointer hit-testing are candidate costs visible in the
 renderer's source, not measured bottlenecks.
 

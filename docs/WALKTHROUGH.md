@@ -1,7 +1,7 @@
 # Vellum in VS Code
 
 These flows were exercised with Vellum 0.4.0 in desktop VS Code 1.106.3 on Linux.
-Screenshots show the actual extension running in an Extension Development Host;
+Screenshots 01–07 show the actual extension running in an Extension Development Host;
 the print screenshot shows the generated HTML in Chromium. See the
 [test report](TESTING.md) for coverage and limitations.
 
@@ -163,3 +163,18 @@ Save `Roadmap.md`, then change the file from another editor or process. The rend
 note should update without becoming dirty or writing the file back. In the test run,
 the selected paragraph stayed selected, the new sentence appeared, and the file's
 SHA-256 stayed unchanged after reload.
+
+## Open the Note Graph (0.4.1)
+
+Open a Markdown note, then run **Markdown Live: Show Note Graph** from the Command
+Palette. The graph opens beside the editor, one link away from the current note.
+Use *Links away* to widen the neighbourhood and *Fit* to bring the graph into view.
+To give it more space, focus the graph and run **View: Toggle Maximize Editor Group**.
+
+The installed desktop build was checked in an existing knowledge vault: this
+Artificial Intelligence neighbourhood has 118 notes, two missing targets and 400 links.
+Grey diamonds represent missing notes. This screenshot is from the normal VS Code
+profile, rather than an Extension Development Host. See the test report for the
+interaction checks that remain unverified.
+
+![Installed Note Graph in VS Code](images/note-graph-vscode.png)

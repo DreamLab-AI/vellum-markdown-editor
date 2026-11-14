@@ -148,7 +148,7 @@ and the notes linked to it, in either direction. Run it from the Command Palette
 panel's title bar or the editor's `…` menu. Nothing is loaded, compiled or indexed for the graph
 until the command runs, and there is no setting to enable.
 
-![The note graph of a note with 40 linked notes, two links away, drawn in Chrome under the panel's content security policy](docs/images/note-graph-browser-harness.jpg)
+![The installed Note Graph in VS Code, centred on Artificial Intelligence with 118 notes, two missing targets and 400 links](docs/images/note-graph-vscode.png)
 
 - **It follows the note in focus.** Switch notes and the graph recentres. It is rebuilt from
   the same link index as the Backlinks panel whenever that index changes, so links typed,
@@ -183,10 +183,12 @@ network request. If the WebAssembly module cannot start, the graph is still draw
 panel says the notes are not arranged.
 [ADR-VEL-001](docs/adr/ADR-VEL-001-shared-graph-and-rust-wasm.md) records the design.
 
-What has been checked: the panel's page ran in Chrome under its real content security policy,
-with a stand-in for the VS Code API, and arranged, dragged, searched and opened notes with no
-policy violation and no request other than its own script. What has not: the panel inside an
-installed VS Code or vscode.dev, a multi-root workspace, and graphs near the 1,000-note limit.
+The installed extension was checked in desktop VS Code 1.106.3 on Linux: the Command Palette
+opened the graph beside the live editor in an existing knowledge vault, with 118 notes, two
+missing targets and 400 links. The graph was then maximised for the screenshot above.
+The page also ran in Chrome under its real content security policy with a stand-in for the
+VS Code API, covering dragging, search and note activation. Desktop interaction coverage
+remains partial; vscode.dev, multi-root workspaces and graphs near 1,000 notes remain untested.
 [docs/TESTING.md](docs/TESTING.md) has the detail.
 
 ## Working with Claude Code
@@ -279,12 +281,13 @@ folders are not followed.
 
 ## Status
 
-Not yet published to the VS Code Marketplace; [PUBLISHING.md](PUBLISHING.md) has the steps.
+Vellum is available on the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=dreamlab-ai.vellum-markdown-editor).
+Version 0.4.1 adds the Note Graph and headless graph CLI; [PUBLISHING.md](PUBLISHING.md) records the release process.
 
 The current build was exercised in desktop VS Code 1.106.3 on Linux: live/source
 editing and saving, backlinks and mention linking, missing-note creation, Explorer
 rename link updates, templates, selection references and reveal, link context, outside
-file changes, and print export. All 63 automated tests pass, including the headless
+file changes, and print export. All 79 automated tests pass, including the headless
 `vellum-graph` queries. The [test report](docs/TESTING.md)
 distinguishes desktop checks from unit coverage and lists remaining gaps.
 
@@ -379,9 +382,10 @@ and export. The [feature test report](docs/TESTING.md) records the observed resu
 
 The [shared graph ADR](docs/adr/ADR-VEL-001-shared-graph-and-rust-wasm.md) and
 [implementation handoff](docs/handoffs/ontomark-graph.md) record how the note graph shares its
-renderer and layout with Ontomark, and what is still planned: acceptance in installed VS Code,
-measurements on large graphs, and compatibility with typed Ontomark vaults before Vellum claims
-to edit them. The note graph is in this repository and is not in the 0.4.0 Marketplace release.
+renderer and layout with Ontomark, and what is still planned: the remaining desktop interaction
+checks, measurements on large graphs, and compatibility with typed Ontomark vaults before
+Vellum claims to edit them. The Note Graph is included from 0.4.1; the 0.4.0 Marketplace
+release does not contain it.
 
 ## Privacy
 

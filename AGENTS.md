@@ -149,8 +149,10 @@ does not run lint or `tsc`.
   every note, which is slow on vaults of thousands of notes. The Note Graph uses
   `createResolver` (`src/links/resolver.ts`), which gives the same answers from an index.
   Moving the other queries to it is open work.
-- The Note Graph has not been run inside an installed VS Code or vscode.dev. Its page was run
-  in Chrome under its real CSP with a stand-in for the VS Code API (`docs/TESTING.md`).
+- The installed Note Graph was opened from the Command Palette beside a live note in desktop
+  VS Code 1.106.3 on Linux: 118 notes, two missing targets and 400 links. Desktop interaction
+  acceptance remains partial; vscode.dev is untested. Browser CSP and interaction checks use
+  a stand-in for the VS Code API (`docs/TESTING.md`).
 - Delivery to Claude Code has not been run against the real Claude extension. That covers the
   selection opened beside Vellum, the @-mention command lookup and the
   `vscode://anthropic.claude-code/open` link. `docs/TESTING.md` lists what was verified.

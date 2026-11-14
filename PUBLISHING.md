@@ -101,3 +101,11 @@ revokes the badge. Keep the domain registered and the website available.
 - The licence is GPL-3.0. `NOTICE.md` and the attribution section of the README must stay.
 - Do not publish while the upstream extension's identifiers are also installed in the same
   VS Code: the two register the same commands.
+
+### Graph release: 0.4.1
+
+Version 0.4.1 packages the Note Graph and headless CLI changes made after 0.4.0.
+The desktop screenshot and smoke-check results are recorded in `docs/TESTING.md`;
+full host interaction acceptance remains incomplete. Publication follows the
+release-tag and `marketplace` approval process above. A local VSIX installation
+does not establish Marketplace publication; the publish workflow must succeed.

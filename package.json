@@ -2,7 +2,7 @@
   "name": "vellum-markdown-editor",
   "displayName": "Vellum Markdown Editor",
   "description": "A live WYSIWYG Markdown editor for VS Code with Pele-rendered diagrams and hardened webviews. A modified version of Obsidian-style Markdown Live Editor by Thinh Vu.",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "publisher": "dreamlab-ai",
   "author": {
     "name": "DreamLab AI Consulting Ltd"

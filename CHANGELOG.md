@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.4.1] - 2026-11-14
+
 ### Added
 * **Note graph** (`Markdown Live: Show Note Graph`, from the Command Palette, the Backlinks panel title bar or the editor's `…` menu): a panel beside the editor that draws the note in focus and the notes linked to it. It follows the note in focus, updates from the link index as links change, opens a note on double-click or Enter, and draws links to notes that do not exist as grey diamonds that cannot be opened. It starts one link away (`markdownLive.graph.depth`, 1 to 3) and draws at most 150 notes, saying how many it hid and offering more, up to 1,000. Nothing loads until the command runs.
 * The graph is drawn by Ontomark's shared renderer (`@dreamlab-ai/ontomark-graph` 0.3.0) and arranged by the `vowl-wasm` 0.2.3 force layout (Rust compiled to WebAssembly), both bundled into `dist/graph.js` from immutable release tarballs and verified by SHA-256 at build time. The layout runs in time-boxed slices in the panel, with no worker and no network request; if the module cannot start the graph is drawn unarranged and says so. The panel's policy is one nonce for script and style plus `'wasm-unsafe-eval'`; see `SECURITY-REVIEW.md`.
@@ -16,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `AGENTS.md` (and a `CLAUDE.md` that imports it): a briefing for coding agents on the repository and on reaching Vellum's features.
 
 ### Documentation and branding
+* Verify the installed Note Graph opens beside the live editor in desktop VS Code 1.106.3 on Linux, drawing 118 notes, two missing targets and 400 links. Add the desktop screenshot and distinguish this smoke check from the remaining host interaction acceptance.
 * Record the shared Ontomark graph architecture and implementation handoff, then amend both for what was built: the layout is a requirement of a usable graph rather than an optional optimisation, the existing `vowl-wasm` simulation is reused instead of a new crate, and the large-graph benchmarks gate later work, not the bounded Vellum view.
 
 ### Fixed

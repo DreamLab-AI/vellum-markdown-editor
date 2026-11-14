@@ -147,13 +147,31 @@ with 40 linked notes and seven missing ones, two links away: 48 nodes and 95 lin
 
 ![The panel in Chrome](images/note-graph-browser-harness.jpg)
 
-Not established by this run:
+Installed desktop check, later the same day. A locally built graph-enabled VSIX (still
+labelled 0.4.0 before the release version bump) was force-installed into the normal
+VS Code 1.106.3 Linux profile and the window reloaded. The installed `dist/graph.js`
+SHA-256 matched the local build. This used the existing knowledge workspace, rather than
+the disposable demo or a stand-in for the VS Code API.
 
-- **Installed VS Code and vscode.dev.** The panel has not been opened in either. That leaves
-  unverified: the command and its three menu entries, the panel opening beside the editor,
-  following the note in focus across real tab groups, opening a note in the right column,
-  theme variables and theme switching as VS Code supplies them, the `…` menu's `when` clause
-  for the custom editor, and behaviour on remote or virtual workspace URIs.
+| Desktop check | Result |
+|---|---|
+| Command Palette → Markdown Live: Show Note Graph | Pass |
+| Opens beside the live editor on the current Artificial Intelligence note | Pass |
+| Draws and arranges the real note neighbourhood with the host's dark theme | Pass |
+| Counts shown | 118 notes, 2 missing targets, 400 links (120 nodes) |
+| View: Toggle Maximize Editor Group enlarges the graph | Pass |
+
+![Installed Note Graph in desktop VS Code](images/note-graph-vscode.png)
+
+The screenshot records rendering, not exhaustive interaction acceptance. No desktop
+console or network trace was collected in this check. The browser checks above remain
+the evidence for policy, network and interaction behaviour.
+
+Not established by these runs:
+
+- **Remaining desktop interactions and vscode.dev.** The Backlinks title-bar and editor
+  menu entries, following focus across real tab groups, note activation into the right
+  column, theme switching, remote or virtual workspace URIs, and vscode.dev remain unverified.
 - **Multi-root workspaces.** The index scopes a graph to one folder and the tests use one.
 - **Edits while the graph is open.** The index path is tested; the on-screen effect of typing
   a link (new note arriving beside its neighbours, positions kept) was not watched.
