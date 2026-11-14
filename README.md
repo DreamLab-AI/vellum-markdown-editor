@@ -324,6 +324,13 @@ and export. The [feature test report](docs/TESTING.md) records the observed resu
 | `markdownLive.aiTarget` | `auto` | Assistant for Send Selection: `auto`, `claude`, `antigravity`, `chat`, `clipboard` |
 | `markdownLive.claudeDelivery` | `selection` | How a selection reaches Claude Code: `selection`, `newTab`, `clipboard` |
 
+## Development plans
+
+The [shared graph ADR](docs/adr/ADR-VEL-001-shared-graph-and-rust-wasm.md) and
+[implementation handoff](docs/handoffs/ontomark-graph.md) describe a planned
+optional graph view, reuse across Vellum and Ontomark, and measured Rust/WASM
+adoption. These are plans, not features of the current release.
+
 ## Privacy
 
 Vellum sends no telemetry and makes no network request of its own. A note that references an
