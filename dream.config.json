@@ -28,7 +28,8 @@
     "changelog: a user-visible change is recorded under Unreleased in CHANGELOG.md and in the README, saying what was not verified",
     "known-state: the tsc enableFindWidget error and unenforced ESLint/Prettier on older files are recorded baselines, not findings; src/test/extension.test.ts is an upstream placeholder, not evidence",
     "upstream-handoff: Vellum is a GPL-3.0 fork of thinh-vu's Markdown Live Editor; a fix that belongs upstream is a HANDOFF, and attribution in NOTICE.md and README.upstream.md is never edited",
-    "release-is-human: Marketplace publishing (publish.yml on a GitHub release) and version bumps are never proposed"
+    "packaging-handoff: .vscodeignore is protected, so a candidate never adds a top-level file; work that needs one (and so a .vscodeignore entry) is a HANDOFF naming the file",
+    "release-is-human:Marketplace publishing (publish.yml on a GitHub release) and version bumps are never proposed"
   ],
   "ledgerPath": "docs/dream-cycle/LEDGER.md",
   "branchPrefix": "dream/",
