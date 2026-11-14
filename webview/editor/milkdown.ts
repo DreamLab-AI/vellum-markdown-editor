@@ -20,7 +20,7 @@ import {
   createCodeBlockCommand,
 } from '@milkdown/preset-commonmark';
 import { clipboard } from '@milkdown/plugin-clipboard';
-import { diagram } from '@milkdown/plugin-diagram';
+import { diagram } from '../plugins/diagram';
 import { prism } from '@milkdown/plugin-prism';
 import { slashFactory, SlashProvider } from '@milkdown/plugin-slash';
 import { Plugin, PluginKey } from '@milkdown/prose/state';

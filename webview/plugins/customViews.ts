@@ -1,7 +1,7 @@
 import { $view } from '@milkdown/utils';
 import { htmlSchema } from '@milkdown/preset-commonmark';
-import { diagramSchema } from '@milkdown/plugin-diagram';
-import mermaid from 'mermaid';
+import { diagramSchema } from './diagram';
+import { PELE_THEME_VARS, renderDiagram, sanitiseHtml, sanitiseSvg } from './diagramRender';
 
 export const htmlView = $view(htmlSchema.node, () => (node, view, getPos) => {
   const container = document.createElement('span');
@@ -9,13 +9,13 @@ export const htmlView = $view(htmlSchema.node, () => (node, view, getPos) => {
   container.style.display = 'inline-block';
   container.style.width = '100%';
   container.style.margin = '8px 0';
-  container.innerHTML = node.attrs.value;
+  container.replaceChildren(sanitiseHtml(node.attrs.value));
 
   return {
     dom: container,
     update: (updatedNode) => {
       if (updatedNode.type.name !== 'html') return false;
-      container.innerHTML = updatedNode.attrs.value;
+      container.replaceChildren(sanitiseHtml(updatedNode.attrs.value));
       return true;
     },
     stopEvent: (event) => {
@@ -29,8 +29,6 @@ export const htmlView = $view(htmlSchema.node, () => (node, view, getPos) => {
   };
 });
 
-mermaid.initialize({ startOnLoad: false, theme: 'default' });
-
 export const mermaidView = $view(diagramSchema.node, () => (node, view, getPos) => {
   const container = document.createElement('div');
   container.className = 'mermaid-container';
@@ -41,7 +39,7 @@ export const mermaidView = $view(diagramSchema.node, () => (node, view, getPos) 
   const preview = document.createElement('div');
   preview.style.textAlign = 'center';
   preview.style.cursor = 'pointer';
-  preview.title = 'Click to edit Mermaid code';
+  preview.title = 'Double-click to edit Mermaid code';
 
   const textarea = document.createElement('textarea');
   textarea.style.width = '100%';
@@ -58,19 +56,37 @@ export const mermaidView = $view(diagramSchema.node, () => (node, view, getPos) 
 
   let isEditing = false;
 
-  const render = async () => {
-    if (!node.attrs.value.trim()) {
-      preview.innerHTML =
-        '<em style="color: var(--vscode-descriptionForeground)">Empty Mermaid diagram</em>';
+  for (const [name, value] of Object.entries(PELE_THEME_VARS)) container.style.setProperty(name, value);
+
+  const showMessage = (text: string, colourVar: string, italic = false) => {
+    const el = document.createElement(italic ? 'em' : 'div');
+    el.style.color = `var(${colourVar})`;
+    el.style.whiteSpace = 'pre-wrap';
+    el.style.textAlign = 'left';
+    el.style.fontFamily = 'var(--vscode-editor-font-family, monospace)';
+    el.textContent = text;
+    preview.replaceChildren(el);
+  };
+
+  // Pele renders synchronously. The SVG is parsed and sanitised, then attached
+  // as nodes: no markup string is ever assigned to innerHTML.
+  const render = () => {
+    const source = node.attrs.value;
+    if (!source.trim()) {
+      showMessage('Empty Mermaid diagram', '--vscode-descriptionForeground', true);
       return;
     }
-    try {
-      const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
-      const { svg } = await mermaid.render(id, node.attrs.value);
-      preview.innerHTML = svg;
-    } catch (e) {
-      preview.innerHTML = `<div style="color: var(--vscode-errorForeground)">Mermaid Syntax Error</div>`;
+    const result = renderDiagram(source);
+    if (!result.ok) {
+      showMessage(`Mermaid syntax error — ${result.message}`, '--vscode-errorForeground');
+      return;
     }
+    const svg = sanitiseSvg(result.svg);
+    if (!svg) {
+      showMessage('The diagram renderer returned malformed SVG', '--vscode-errorForeground');
+      return;
+    }
+    preview.replaceChildren(svg);
   };
   render();
 

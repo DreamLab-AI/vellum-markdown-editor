@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { escapeHtml } from '../security';
 
 export function getHtmlForWebview(
   webview: vscode.Webview,
@@ -43,15 +44,14 @@ export function getHtmlForWebview(
             <html lang="en">
             <head>
                 <meta charset="UTF-8">
-                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} data: https:; style-src ${webview.cspSource} 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src ${webview.cspSource} 'unsafe-eval';">
-                <base href="${baseUri}">
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} data: https:; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource} data:; script-src ${webview.cspSource};">
+                <base href="${escapeHtml(baseUri)}">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta name="image-public-path" content="${imagePublicPath}">
-                <meta name="workspace-root" content="${workspaceRootUriStr}">
+                <meta name="image-public-path" content="${escapeHtml(imagePublicPath)}">
+                <meta name="workspace-root" content="${escapeHtml(workspaceRootUriStr)}">
                 <meta name="enable-slash-command" content="${enableSlashCommand}">
-                <meta name="config-lang" content="${configLang}">
+                <meta name="config-lang" content="${escapeHtml(configLang)}">
                 <title>Markdown Live Editor</title>
-                <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
                 <link href="${styleUri}" rel="stylesheet" />
                 <style>
                     body {

@@ -1,11 +1,17 @@
 import { getHtmlForWebview } from './webview/template';
 import { handleWebviewMessage } from './handlers/messageHandler';
 import * as vscode from 'vscode';
+import { newNonce } from './security';
 
 export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
   public static currentPanel: vscode.WebviewPanel | undefined;
   public static currentDocument: vscode.TextDocument | undefined;
   public static openPanels: { panel: vscode.WebviewPanel, document: vscode.TextDocument }[] = [];
+
+  /** The extension's install location (bundled assets live under dist/). */
+  public get extensionUri(): vscode.Uri {
+    return this.context.extensionUri;
+  }
 
   public static postCommandToActiveWebview(command: string) {
     if (MarkdownLiveProvider.currentPanel) {
@@ -90,12 +96,14 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
         : 'The split-screen Diff view is currently only available in the default VS Code text editor.';
       const btn = lang === 'vi' ? 'Chuyển sang Standard Text Editor' : 'Switch to Standard Text Editor';
 
+      const nonce = newNonce();
       webviewPanel.webview.options = { enableScripts: true };
       webviewPanel.webview.html = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
           <meta charset="UTF-8">
+          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';">
           <style>
             body { font-family: var(--vscode-font-family); color: var(--vscode-editor-foreground); padding: 20px; text-align: center; margin-top: 50px; }
             button { background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; }
@@ -108,7 +116,11 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
           <h2>${title}</h2>
           <p>${desc}</p>
           <br/>
-          <button onclick="acquireVsCodeApi().postMessage({ command: 'reopen' })">${btn}</button>
+          <button id="reopen">${btn}</button>
+          <script nonce="${nonce}">
+            const api = acquireVsCodeApi();
+            document.getElementById('reopen').addEventListener('click', () => api.postMessage({ command: 'reopen' }));
+          </script>
         </body>
         </html>
       `;

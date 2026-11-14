@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { escapeHtml, newNonce } from './security';
 import { NoteManager } from './noteManager';
 import { BookmarkManager, Bookmark } from './bookmarkManager';
 
@@ -35,7 +36,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'openFile': {
+          if (typeof data.value !== 'string') break;
           const uri = vscode.Uri.parse(data.value);
+          // The list only ever offers Markdown files of this workspace.
+          if (!/\.md$/i.test(uri.path) || !vscode.workspace.getWorkspaceFolder(uri)) break;
           await vscode.commands.executeCommand('vscode.openWith', uri, 'markdownLive.editor');
           break;
         }
@@ -82,15 +86,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const recentFiles = [...fileStats].sort((a, b) => b.stat.mtime - a.stat.mtime);
     const vaultFiles = [...fileStats].sort((a, b) => a.uri.fsPath.localeCompare(b.uri.fsPath));
 
-    const escapeHtml = (unsafe: string) => {
-      return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    };
-
     const generateHtmlList = async (filesList: typeof fileStats) => {
       let htmlList = '';
       for (const { uri } of filesList) {
@@ -113,7 +108,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             
             let imgUri: vscode.Uri | undefined;
             if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
-              thumbnailHtml = `<img src="${escapeHtml(imgPath)}" class="note-thumbnail" onerror="this.style.display='none'" onload="if(this.naturalWidth<20)this.style.display='none'">`;
+              thumbnailHtml = `<img src="${escapeHtml(imgPath)}" class="note-thumbnail">`;
             } else {
               const workspaceFolders = vscode.workspace.workspaceFolders;
               if (workspaceFolders && workspaceFolders.length > 0) {
@@ -131,7 +126,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 
                 if (imgUri && this._view) {
                   const webviewImgUri = this._view.webview.asWebviewUri(imgUri);
-                  thumbnailHtml = `<img src="${webviewImgUri}" class="note-thumbnail" onerror="this.style.display='none'" onload="if(this.naturalWidth<20)this.style.display='none'">`;
+                  thumbnailHtml = `<img src="${escapeHtml(webviewImgUri.toString())}" class="note-thumbnail">`;
                 }
               }
             }
@@ -147,7 +142,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           const preview = cleanContent.substring(0, 100) + (cleanContent.length > 100 ? '...' : '');
 
           htmlList += `
-            <div class="note-item" onclick="openFile('${uri.toString()}')">
+            <div class="note-item" data-open="${escapeHtml(uri.toString())}">
               <div class="note-content">
                 <div class="note-title">${escapeHtml(title)}</div>
                 <div class="note-preview">${preview ? escapeHtml(preview) : '<em>Empty note</em>'}</div>
@@ -172,7 +167,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
        const uri = vscode.Uri.parse(bm.fileUri);
        let title = uri.path.split('/').pop()?.replace(/\.md$/i, '') || 'Untitled';
        bookmarksHtml += `
-         <div class="note-item" onclick="openFile('${bm.fileUri}')">
+         <div class="note-item" data-open="${escapeHtml(bm.fileUri)}">
            <div class="note-content">
              <div class="note-title"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square-text" style="vertical-align: middle; margin-right: 4px; color: var(--vscode-list-activeSelectionForeground);"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/></svg>${escapeHtml(title)}</div>
              <div class="note-preview"><em>"${escapeHtml(bm.text)}"</em></div>
@@ -189,10 +184,18 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
   }
 
   private _getHtmlForWebview() {
+    // Everything listed here is built from workspace files, so the view gets a
+    // strict policy: one nonce'd script, no inline handlers, no network except
+    // the https thumbnails a note itself references.
+    const nonce = newNonce();
+    const csp = this._view
+      ? `default-src 'none'; img-src ${this._view.webview.cspSource} https: data:; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';`
+      : "default-src 'none';";
     return `<!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
+        <meta http-equiv="Content-Security-Policy" content="${csp}">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Notes</title>
         <style>
@@ -288,9 +291,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       <body>
         
         <div class="tabs">
-          <div class="tab active" id="tab-recent" onclick="switchTab('recent')">Recent Files</div>
-          <div class="tab" id="tab-vault" onclick="switchTab('vault')">Vault Files</div>
-          <div class="tab" id="tab-bookmarks" onclick="switchTab('bookmarks')">Annotations</div>
+          <div class="tab active" id="tab-recent" data-tab="recent">Recent Files</div>
+          <div class="tab" id="tab-vault" data-tab="vault">Vault Files</div>
+          <div class="tab" id="tab-bookmarks" data-tab="bookmarks">Annotations</div>
         </div>
 
         <div class="notes-container" id="notes-recent">
@@ -303,7 +306,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           <div class="empty-state">Loading annotations...</div>
         </div>
 
-        <script>
+        <script nonce="${nonce}">
           const vscode = acquireVsCodeApi();
           const notesVault = document.getElementById('notes-vault');
           const notesRecent = document.getElementById('notes-recent');
@@ -335,9 +338,22 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             }
           }
 
-          function openFile(path) {
-            vscode.postMessage({ type: 'openFile', value: path });
-          }
+          document.addEventListener('click', (event) => {
+            const target = event.target instanceof Element ? event.target : null;
+            if (!target) return;
+            const tab = target.closest('[data-tab]');
+            if (tab) { switchTab(tab.getAttribute('data-tab')); return; }
+            const item = target.closest('[data-open]');
+            if (item) vscode.postMessage({ type: 'openFile', value: item.getAttribute('data-open') });
+          });
+
+          // Thumbnails that fail to load, or are tracking-pixel sized, are hidden.
+          document.addEventListener('error', (event) => {
+            if (event.target instanceof HTMLImageElement) event.target.style.display = 'none';
+          }, true);
+          document.addEventListener('load', (event) => {
+            if (event.target instanceof HTMLImageElement && event.target.naturalWidth < 20) event.target.style.display = 'none';
+          }, true);
 
           window.addEventListener('message', event => {
             const message = event.data;

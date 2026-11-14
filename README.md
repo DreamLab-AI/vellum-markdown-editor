@@ -105,7 +105,7 @@ Tired of splitting your screen just to see how your Markdown looks? Default VS C
 
   </details>
 
-* **Mermaid & HTML Rendering**: Natively render complex Mermaid charts/diagrams on the fly and support custom inline HTML blocks for ultimate flexibility.
+* **Mermaid & HTML Rendering**: Render Mermaid diagrams on the fly with [Pele](https://github.com/obsidianmd/pele), Obsidian's dependency-free Mermaid renderer, themed to match VS Code. Inline HTML blocks are supported with active content removed.
 * **GitHub-Flavored Elements**: Native support for GFM, admonitions (beautiful rich-text alerts for Notes, Tips, Warnings, Cautions, and Important callouts), footnotes, and elegant hashtag rendering (`#tag`).
 
 **Frictionless UX**
@@ -162,3 +162,7 @@ The extension comes with several customization options available in your VS Code
 ***
 
 *Crafted for developers, researchers, and writers who demand an elegant, unified workspace.*
+
+## About this fork
+
+This is a hardened fork of [thinh-vu/vscode-markdown-editor](https://github.com/thinh-vu/vscode-markdown-editor). It renders diagrams with Pele instead of Mermaid and closes the issues listed in [SECURITY-REVIEW.md](SECURITY-REVIEW.md). Licence unchanged: GPL-3.0.

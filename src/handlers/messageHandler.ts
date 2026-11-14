@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { MarkdownLiveProvider } from '../editorProvider';
 import { BookmarkManager } from '../bookmarkManager';
+import { inlineScript, safeImageExt } from '../security';
 
 function getRelativePath(fromPath: string, toPath: string): string {
   const fromParts = fromPath.split('/').filter(Boolean);
@@ -204,7 +205,7 @@ export async function handleWebviewMessage(
                 break;
               }
 
-              const fileName = `image-${Date.now()}.${e.ext}`;
+              const fileName = `image-${Date.now()}.${safeImageExt(e.ext)}`;
               const fileUri = vscode.Uri.joinPath(imagesUri, fileName);
 
               // Thay vì dùng Buffer (không có sẵn trong môi trường Web Extension), dùng atob
@@ -486,10 +487,25 @@ export async function handleWebviewMessage(
               console.error('Failed to inline CSS for PDF export', err);
             }
 
-            // 5. Inject Paged.js and dynamic CSS
+            // 5. Inject Paged.js and dynamic CSS. Paged.js is the pinned copy
+            // bundled into dist/ at build time and inlined here: the preview
+            // is a file:// page holding the whole note, so it must not pull a
+            // script from a CDN.
+            let pagedScript = '';
+            try {
+              const pagedUri = vscode.Uri.joinPath(provider.extensionUri, 'dist', 'paged.polyfill.js');
+              pagedScript = inlineScript(new TextDecoder().decode(await vscode.workspace.fs.readFile(pagedUri)));
+            } catch (err) {
+              console.error('Paged.js is missing from the extension bundle; the preview will not be paginated', err);
+            }
+            // The page copied from the webview carries the webview's CSP and
+            // script tag, neither of which applies to a standalone file.
+            modifiedHtml = modifiedHtml
+              .replace(/<meta[^>]+http-equiv="Content-Security-Policy"[^>]*>/i, '')
+              .replace(/<script\b[^>]*\bsrc="[^"]*"[^>]*>\s*<\/script>/gi, '');
             const fontRule = printFontFamily ? `font-family: ${printFontFamily} !important;` : '';
             const injection = `
-              <script src="https://unpkg.com/pagedjs/dist/paged.polyfill.js"></script>
+              ${pagedScript}
               <style>
                 @page {
                   size: A4;

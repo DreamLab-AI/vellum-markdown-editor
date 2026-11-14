@@ -5,6 +5,25 @@ All notable changes to the "obsidian-markdown-live-editor" extension will be doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased (fork)
+
+### Security
+* Sidebar webview: strict Content-Security-Policy with a nonce, no inline handlers, escaped values; fixes script injection through `.tmp/bookmarks.json`.
+* PDF export no longer loads Paged.js from a CDN; a pinned, digest-verified copy is bundled and inlined.
+* Editor webview: `'unsafe-eval'` and remote Google Fonts removed.
+* Raw HTML blocks and diagram SVG are sanitised and attached as nodes, not assigned to `innerHTML`.
+* Pasted image extensions are restricted to known image types.
+* `prosemirror-view` raised to 1.42.9 (paste XSS).
+
+### Changed
+* Mermaid diagrams are rendered by Pele 1.12.0. Mermaid 10 and 11, DOMPurify and 150 other packages are gone; the webview bundle is 2.26 MB, down from 7.75 MB.
+* Diagram syntax errors show the line and a caret snippet.
+
+### Fixed
+* PDF export could not inline its stylesheet (`extensionUri` was undefined).
+
+See `SECURITY-REVIEW.md`.
+
 ## v0.1.4
 
 ### ✨ New Features
