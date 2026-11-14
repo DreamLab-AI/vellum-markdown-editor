@@ -5,7 +5,9 @@ All notable changes to the "obsidian-markdown-live-editor" extension will be doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased (fork)
+## v0.2.0 — Vellum Markdown Editor (2026-11-14)
+
+First release of the modified version maintained by DreamLab AI, based on upstream v0.1.4 (`b90af69`). Renamed from *Obsidian-style Markdown Editor* (`vnstock.obsidian-markdown-live-editor`) to `dreamlab-ai.vellum-markdown-editor`; command and setting identifiers are unchanged.
 
 ### Security
 * Sidebar webview: strict Content-Security-Policy with a nonce, no inline handlers, escaped values; fixes script injection through `.tmp/bookmarks.json`.

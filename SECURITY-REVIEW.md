@@ -1,7 +1,7 @@
-# Security review of this fork
+# Security review
 
 Reviewed 2026-11-14 at upstream commit `b90af69` (thinh-vu/vscode-markdown-editor, v0.1.4).
-All 44 tracked files were read. This records what was found, what this fork changed, and what
+All 44 tracked files were read. This records what was found, what Vellum changed, and what
 remains.
 
 ## What the extension can do

@@ -13,3 +13,6 @@ tsconfig.json
 package-lock.json
 webpack.config.js
 .eslintrc.json
+.test-out/**
+scripts/**
+README.upstream.md

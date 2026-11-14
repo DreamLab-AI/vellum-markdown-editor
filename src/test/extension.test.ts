@@ -10,6 +10,6 @@ suite('Extension Test Suite', () => {
   });
 
   test('Extension should be present', () => {
-    assert.ok(vscode.extensions.getExtension('vnstock.obsidian-markdown-live-editor'));
+    assert.ok(vscode.extensions.getExtension('dreamlab-ai.vellum-markdown-editor'));
   });
 });

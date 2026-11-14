@@ -1,168 +1,135 @@
-# Obsidian-Style Markdown Live Editor for VS Code
+# Vellum Markdown Editor
 
-[![VS Code Extension](https://img.shields.io/badge/VS%20Code-Extension-blue?style=flat\&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=vnstock.obsidian-markdown-live-editor)
-[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=flat\&logo=github)](https://github.com/thinh-vu/vscode-markdown-editor)
-[![License](https://img.shields.io/badge/License-GPL--3.0-green?style=flat)](LICENSE.txt)
+A live, what-you-see-is-what-you-get Markdown editor for VS Code, with diagrams rendered by
+[Pele](https://github.com/obsidianmd/pele) and webviews locked down by a strict content
+security policy.
 
-A blazing-fast, **Obsidian-style Markdown WYSIWYG editor** built natively as a **VS Code extension**. Experience seamless **real-time preview**, rich text formatting, and frictionless note-taking directly inside your code editor. This extension serves as the ultimate **VS Code Markdown alternative**, bringing the aesthetic and productivity of Notion and Obsidian to your IDE.
+Vellum is a modified version of
+[**Obsidian-style Markdown Live Editor**](https://github.com/thinh-vu/vscode-markdown-editor)
+by Thinh Vu, released under the same licence, GPL-3.0. See [Attribution](#attribution-and-licence).
 
-![First Impression](https://vnstocks.com/images/markdown-live-editor/vs-code-markdown-live-editor-web.png)
+## What it does
 
-## ❓ Why choose this over the default VS Code Markdown Preview?
+- **Live editing.** Edit rendered Markdown directly (Milkdown), or switch to a source view
+  (CodeMirror 6) that stays in sync.
+- **Diagrams.** Fenced `mermaid` blocks render in place and follow your VS Code theme. A syntax
+  error shows the line and a caret under the fault.
+- **Maths, tables and GitHub-flavoured Markdown.** KaTeX, a table context menu, admonitions,
+  task lists and YAML front matter.
+- **Slash commands and templates.** Type `/` for a quick-insert menu; keep your own templates in
+  a folder.
+- **Images.** Paste or drop an image to save it under a configured directory; rename it from
+  the context menu.
+- **Wikilinks and outline.** Type `[[` to link another note; a fly-out outline tracks headings.
+- **Sidebar.** Recent notes, the whole workspace, and bookmarks.
+- **PDF export.** Paginated preview with header, footer, page numbers and an optional contents
+  page.
+- **Send to AI context.** Send the selection, with its file and line range, to a chat panel.
 
-Tired of splitting your screen just to see how your Markdown looks? Default VS Code forces you into a clunky dual-pane setup, wasting screen space and breaking your flow. This extension brings the **true WYSIWYG (What You See Is What You Get)** experience right into your IDE, allowing you to edit styled text visually without writing raw syntax. Perfect for crafting `README.md` files, API documentation, or personal knowledge management (PKM).
+## What differs from upstream
 
-## ✨ Features
+| Area | Upstream 0.1.4 | Vellum |
+|---|---|---|
+| Diagram renderer | Mermaid 10 and 11, both bundled | Pele 1.12.0: no dependencies, synchronous, no `eval` |
+| Editor bundle | 7.75 MB | 2.26 MB |
+| Sidebar webview | No content security policy; a value from a workspace file reached an inline handler | Nonce policy, no inline handlers, all values escaped |
+| PDF export | Loaded a script from a CDN, unpinned | Pinned copy, checked by SHA-256 at build, bundled |
+| Editor webview | `'unsafe-eval'`; Google Fonts fetched on every open | Neither |
+| Raw HTML and diagram output | Assigned to `innerHTML` | Sanitised, attached as nodes |
+| npm advisories | 28, one critical | 19, none critical; one low-severity issue ships |
 
-### 🌟 Killer Features
+The full review, including what is **not** fixed, is in [SECURITY-REVIEW.md](SECURITY-REVIEW.md).
 
-* **Obsidian Experience Without the Vault Overhead**: Enjoy the frictionless, elegant writing experience of Obsidian directly inside VS Code. No need to create heavy vaults or complex setups just to edit a project README or documentation. One editor to rule your code and docs!
-* **True WYSIWYG & Blazing Fast Performance**: Experience lightning-fast, buttery-smooth Markdown editing without the clunky split-screen. Thanks to a highly optimized, web-first architecture, the extension loads instantly and performs flawlessly even in pure web environments like `vscode.dev`.
-* **Zero-Lag Dual-Mode Synchronization**: Switch instantly between the rich Live Editor and a robust Source Mode powered by CodeMirror 6. Unlike other editors that claim to sync but suffer from intense lag or erratic cursor jumps, our editor delivers a rock-solid, buttery-smooth sync that accurately preserves your precise cursor position during real-time typing and DOM updates.
+### Diagram compatibility
 
-  <details>
-  <summary>📸 View Source Mode Editing</summary>
+Mermaid stays the source syntax, so your documents do not change. Pele targets Mermaid 12.1
+syntax and lays diagrams out with its own engine, so a diagram can look different from
+Mermaid's rendering. Mermaid themes, `%%{init}%%` directives and click handlers are not
+honoured.
 
-  ![Source Mode Editing](https://vnstocks.com/images/markdown-live-editor/code-view.png)
+## Status
 
-  </details>
-* **Slash Commands & Dynamic Templates**: Type `/` to instantly access a sleek quick-insert menu enriched with premium Lucide icons. Ditch clunky JSON snippets by configuring a local folder of your own Markdown templates and seamlessly inserting them into your current document using the Slash command or keyboard shortcuts (`Cmd/Ctrl + Shift + E`).
+This is a source release. It is **not published to the VS Code Marketplace**, and the extension
+host side has not yet been exercised inside VS Code: the editor bundle was tested in Chromium
+under the shipped policy, and the helpers by unit tests. Try the sidebar, a PDF export and an
+image paste before relying on it.
 
-  <details>
-  <summary>📸 View Slash Commands</summary>
+## Build and install
 
-  ![Slash Commands](https://vnstocks.com/images/markdown-live-editor/slash-commands.png)
+Requires Node 20 or later.
 
-  </details>
-* **Smart Asset & Media Management**:
+```sh
+npm ci --ignore-scripts      # install scripts are not needed to build
+npm run test:unit            # 15 tests
+npm run package              # verifies the pinned assets, then bundles into dist/
+npx @vscode/vsce package     # produces a .vsix
+code --install-extension vellum-markdown-editor-*.vsix
+```
 
-  * **Auto-Paste**: Automatically save attached images to a customizable local directory when pasting directly into the editor.
-  * **Smart Deletion**: When you delete a markdown file, the editor intelligently asks if you want to clean up its attached images and assets to prevent system junk!
-  * **Auto-resolve**: Effortlessly resolves absolute image paths by prefixing them in the preview (e.g. for a Next.js `public` directory), keeping your raw Markdown code clean and portable. You can also rename images effortlessly via the context menu.
+`npm run package` fails if Pele or Paged.js does not match its pinned SHA-256
+(`scripts/verify-pins.mjs`).
 
-  <details>
-  <summary>📸 View Media Management</summary>
+Vellum keeps upstream's command and setting identifiers (`markdown-live.*`, `markdownLive.*`),
+so existing settings and keybindings carry over. For the same reason, **do not install it
+alongside the upstream extension**: the two would register the same commands and editor.
 
-  ![Image Pasting Configuration](https://vnstocks.com/images/markdown-live-editor/public-image-path.png)
-  ![Image Rename Context Menu](https://vnstocks.com/images/markdown-live-editor/trigger-image-file-rename.png)
+## Use
 
-  </details>
-* **Workspace Sidebar Explorer**:
-  * A dedicated native Sidebar panel for managing your Markdown notes, separating your writing vault from your code explorer.
-  * Beautiful note cards featuring automatic **Image Thumbnail Extraction** and text previews.
-  * Smart organization with two dedicated tabs: **Recent Files** (for quick access to active work) and **Vault Files** (for alphabetical browsing).
-  * Filter the noise: Configure a specific `markdownLive.sidebarScanDirectory` so the sidebar only shows your actual notes, ignoring `node_modules` or build folders.
-  * Consolidated quick-actions to create empty notes or spawn notes directly from your templates.
-* **Seamless AI Agent Integration (Send to AI Context)**:
-  * Highlight any excerpt in the live editor, right-click to select **"Send to AI Context"**, or use keyboard shortcut `Cmd + Shift + L` (`Ctrl + Shift + L` on Windows/Linux).
-  * Effortlessly tags and injects the selected context directly into your active **Antigravity AI Agent** / VS Code Chat panel, attaching direct file references with pinpoint precision.
-* **Beautiful PDF Export**:
-  * Export your Markdown documents into professional, beautifully styled PDFs with a single click.
-  * Powered by Paged.js for true print pagination, complete with automatic Table of Contents generation and customizable print styles.
-* **In-Editor Find & Replace**:
-  * A fully interactive, floating Find & Replace widget embedded natively inside the WYSIWYG interface. Includes Match Case toggling and supports standard `Cmd + F` shortcuts.
-* **Native Git Diff Compatibility**:
-  * Designed to play nicely with VS Code's Source Control. If set as your default Markdown editor, clicking a changed file intelligently falls back to the native split-screen Git Diff so you never lose visibility over your version history.
+Open a `.md` file, then any of:
 
-### ✨ Quality of Life & Extended Syntax
+1. `Ctrl + Alt + Shift + M` (`Cmd + Ctrl + Shift + M` on macOS).
+2. Right-click the file in the Explorer and choose **Open in Markdown Live Editor**.
+3. Click the pencil icon at the top right of the text editor.
 
-**Navigation & Organization**
+| Command | macOS | Windows and Linux |
+|---|---|---|
+| Open live editor | `Cmd + Ctrl + Shift + M` | `Ctrl + Alt + Shift + M` |
+| Send to AI context | `Cmd + Shift + L` | `Ctrl + Shift + L` |
+| Insert link | `Cmd + K` | `Ctrl + K` |
+| Insert table | `Cmd + Option + T` | `Ctrl + Shift + T` |
+| Insert code block | `Cmd + Option + C` | `Ctrl + Shift + C` |
+| Bold | `Cmd + Option + B` | `Ctrl + Shift + B` |
+| Italic | `Cmd + I` | `Ctrl + I` |
+| Heading 1 to 6 | `Cmd + Option + 1-6` | `Ctrl + Shift + 1-6` |
 
-* **Dynamic Flyout Outline**: A beautifully animated hierarchical outline navigation on the right edge. It expands gracefully to reveal full text when hovered, keeping your workspace clean.
+## Settings
 
-  <details>
-  <summary>📸 View Flyout Outline</summary>
+| Setting | Default | Purpose |
+|---|---|---|
+| `markdownLive.language` | `en` | Interface language (`en` or `vi`) |
+| `markdownLive.fontFamily` | `sans-serif` | `sans-serif` or `serif`; local fonts only |
+| `markdownLive.tableDisplayMode` | `scroll` | `scroll` or `wrap` for wide tables |
+| `markdownLive.enableSlashCommand` | `true` | The `/` menu |
+| `markdownLive.defaultNoteDirectory` | empty | Where new notes are created |
+| `markdownLive.sidebarScanDirectory` | empty | Folder the sidebar lists |
+| `markdownLive.templateFolder` | empty | Folder of note templates |
+| `markdownLive.imageDirectory` | `assets/images` | Where pasted images are saved |
+| `markdownLive.imagePublicPath` | empty | Prefix for image paths that start with `/` |
+| `markdownLive.printHeaderFormat` | `{title}` | PDF header; accepts front-matter variables |
+| `markdownLive.printFooterFormat` | `{signature}` | PDF footer |
+| `markdownLive.printPageNumberFormat` | `{page}` | PDF page numbering |
+| `markdownLive.printFontFamily` | empty | Font for PDF export |
+| `markdownLive.printAutoTOC` | `false` | Insert a contents page when exporting |
 
-  ![Article Outline Navigation](https://vnstocks.com/images/markdown-live-editor/article-outline.png)
-  ![Flyout Outline Interface](https://vnstocks.com/images/markdown-live-editor/flyout-outline.png)
+## Privacy
 
-  </details>
-* **YAML Frontmatter & Metadata**: Built-in parsing for YAML metadata (like Obsidian). Offers an elegant, collapsible UI to edit document properties without cluttering your writing.
+Vellum sends no telemetry and makes no network request of its own. A note that references an
+image on a remote server will still load that image when opened, as Markdown images do.
 
-  <details>
-  <summary>📸 View Metadata & Footnotes</summary>
+## Attribution and licence
 
-  ![Features Overview](https://vnstocks.com/images/markdown-live-editor/document-features.png)
+Vellum Markdown Editor is free software under the **GNU General Public License, version 3**
+([LICENSE](LICENSE)). It comes with no warranty.
 
-  </details>
-* **Smart Wikilinks**: Type `[[` to trigger a file search dialog, instantly converting selections into standard relative Markdown links or image embeds.
+- It is a modified version of **Obsidian-style Markdown Live Editor** 0.1.4, © 2026 Thinh Vu
+  ([thinh-vu/vscode-markdown-editor](https://github.com/thinh-vu/vscode-markdown-editor),
+  commit `b90af69`), licensed GPL-3.0. Upstream's own README is kept as
+  [README.upstream.md](README.upstream.md).
+- Modifications © 2026 DreamLab AI Consulting Ltd, first made on 14 November 2026 and listed in
+  [CHANGELOG.md](CHANGELOG.md) and [SECURITY-REVIEW.md](SECURITY-REVIEW.md).
+- Third-party components and their licences are listed in [NOTICE.md](NOTICE.md).
 
-  <details>
-  <summary>📸 View Smart Wikilinks</summary>
-
-  ![Wikilink Support](https://vnstocks.com/images/markdown-live-editor/wikilink.png)
-
-  </details>
-
-**Extended Markdown Syntax**
-
-* **Advanced Tables**: Manage Markdown tables effortlessly via an intuitive right-click context menu to add/remove rows/columns, or insert custom dimensions directly from the toolbar.
-
-<details>
-  <summary>📸 View Context Menu for Table Editting</summary>
-
-![Table Context Menu](https://vnstocks.com/images/markdown-live-editor/table-context-menu.png)
-
-  </details>
-
-* **Mermaid & HTML Rendering**: Render Mermaid diagrams on the fly with [Pele](https://github.com/obsidianmd/pele), Obsidian's dependency-free Mermaid renderer, themed to match VS Code. Inline HTML blocks are supported with active content removed.
-* **GitHub-Flavored Elements**: Native support for GFM, admonitions (beautiful rich-text alerts for Notes, Tips, Warnings, Cautions, and Important callouts), footnotes, and elegant hashtag rendering (`#tag`).
-
-**Frictionless UX**
-
-* **Comprehensive Interactive Toolbar**: A sleek, sticky toolbar packed with essential formatting tools. Instantly apply formatting with a single click.
-
-  <details>
-  <summary>📸 View Toolbar</summary>
-
-  ![Interactive Toolbar](https://vnstocks.com/images/markdown-live-editor/toolbar.png)
-
-  </details>
-
-* **Auto-Save & Auto-Refresh**: Your notes are reliably saved as you write. The live editor also updates on the fly whenever you tweak fonts, UI languages, or image paths—no manual reloads required.
-
-* **Configurable Typography**: Switch between a modern `sans-serif` default or an immersive `serif` (Substack-style) font via VS Code settings.
-
-## 🚀 Getting Started
-
-There are 3 ways to launch the Live Editor:
-
-1. Use the keyboard shortcut `Cmd + Option + Shift + M` (or `Ctrl + Alt + Shift + M` on Windows/Linux).
-2. Right-click any `.md` file in the Explorer and select **"Open in Markdown Live Editor"**.
-3. Click the **Edit** (pencil) icon in the top right corner of the active raw text view.
-
-![3 Ways to Open Live Editor](https://vnstocks.com/images/markdown-live-editor/3-ways-to-open-live-editor.png)
-
-## ⚙️ Configuration
-
-The extension comes with several customization options available in your VS Code settings, such as UI language, typography fonts, image paths, and Slash Command toggles.
-
-![Settings UI](https://vnstocks.com/images/markdown-live-editor/settings.png)
-![Settings Dialog](https://vnstocks.com/images/markdown-live-editor/settings-dialog.png)
-
-## ⌨️ Keyboard Shortcuts
-
-| Command                | Mac                      | Windows/Linux            |
-| ---------------------- | ------------------------ | ------------------------ |
-| **Open Live Editor**   | `Cmd + Ctrl + Shift + M` | `Ctrl + Alt + Shift + M` |
-| **Send to AI Context** | `Cmd + Shift + L`        | `Ctrl + Shift + L`       |
-| **Insert Link**        | `Cmd + K`                | `Ctrl + K`               |
-| **Insert Table**       | `Cmd + Option + T`       | `Ctrl + Shift + T`       |
-| **Insert Code Block**  | `Cmd + Option + C`       | `Ctrl + Shift + C`       |
-| **Toggle Bold**        | `Cmd + Option + B`       | `Ctrl + Shift + B`       |
-| **Toggle Italic**      | `Cmd + I`                | `Ctrl + I`               |
-| **Insert Heading 1-6** | `Cmd + Option + 1-6`     | `Ctrl + Shift + 1-6`     |
-
-## 🤝 Credits & Acknowledgements
-
-* **Author**: [Thinh Vu](https://github.com/thinh-vu)
-* **Project Ecosystem**: Brought to you by [Vnstock](https://vnstocks.com/).
-* **Open Source Foundations**: Built on top of the amazing [Milkdown](https://milkdown.dev/) and [CodeMirror 6](https://codemirror.net/).
-
-***
-
-*Crafted for developers, researchers, and writers who demand an elegant, unified workspace.*
-
-## About this fork
-
-This is a hardened fork of [thinh-vu/vscode-markdown-editor](https://github.com/thinh-vu/vscode-markdown-editor). It renders diagrams with Pele instead of Mermaid and closes the issues listed in [SECURITY-REVIEW.md](SECURITY-REVIEW.md). Licence unchanged: GPL-3.0.
+Vellum is not affiliated with or endorsed by Thinh Vu, Vnstock, Obsidian or Dynalist Inc.
+"Obsidian" and "Mermaid" are names of their respective owners, used here only to describe
+compatibility. Security fixes are offered back to upstream; please report problems with this
+version in this repository, not upstream.
