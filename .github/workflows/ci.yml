@@ -19,6 +19,8 @@ jobs:
           cache: npm
       # Install scripts are not needed to build and are not run.
       - run: npm ci --ignore-scripts
+      # ESLint with the repo's own config: errors fail the build, warnings do not.
+      - run: npm run lint
       - run: npm run test:unit
       # Verifies the pinned Pele, Paged.js, Ontomark graph and vowl-wasm digests, then bundles.
       - run: npm run package
