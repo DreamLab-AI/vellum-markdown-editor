@@ -4,3 +4,4 @@
 | 2026-11-16 | webview-editor | npm ci EALLOWREMOTE blocks vowl-wasm+ontomark tarballs (deps, not devDeps) | NONE | NONE | yes | INCONCLUSIVE |  | 13751806e2b4 |  |  |  |
 | 2026-11-17 | security-boundary | EALLOWREMOTE night 3; package eval runs verify-pins needing both GitHub tarballs | NONE | NONE | yes | INCONCLUSIVE |  | 046412d474c7 |  |  |  |
 | 2026-11-18 | ai-delivery | npm ci EALLOWREMOTE night 4; vowl-wasm+ontomark tarballs block all checks | NONE | NONE | yes | INCONCLUSIVE |  | be18e2a48088 |  |  |  |
+| 2026-11-19 | notes-workspace | npm ci EALLOWREMOTE night 5; verify-pins protection bars repo-side dep removal | NONE | NONE | yes | INCONCLUSIVE |  | 8ac3bc647751 |  |  |  |
