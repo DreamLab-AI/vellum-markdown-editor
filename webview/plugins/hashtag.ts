@@ -13,7 +13,7 @@ export const hashtagPlugin = new Plugin({
         if (node.isText && node.text) {
           let match;
           while ((match = HASHTAG_REGEX.exec(node.text)) !== null) {
-            // match[1] is the actual hashtag. 
+            // match[1] is the actual hashtag.
             // match[0] could include a leading whitespace.
             const startPos = pos + match.index + (match[0].length - match[1].length);
             const endPos = startPos + match[1].length;
@@ -21,7 +21,7 @@ export const hashtagPlugin = new Plugin({
             decorations.push(
               Decoration.inline(startPos, endPos, {
                 class: 'hashtag',
-              })
+              }),
             );
           }
         }

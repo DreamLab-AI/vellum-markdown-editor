@@ -10,7 +10,8 @@ export interface MdNode {
 
 /** Split each text node into text and `wikilink` nodes. Links and code are left alone. */
 export function splitTextNodes(node: MdNode): void {
-  if (!Array.isArray(node.children) || node.type === 'link' || node.type === 'linkReference') return;
+  if (!Array.isArray(node.children) || node.type === 'link' || node.type === 'linkReference')
+    return;
   const out: MdNode[] = [];
   for (const child of node.children) {
     if (child.type !== 'text' || typeof child.value !== 'string' || !child.value.includes('[[')) {
@@ -25,4 +26,3 @@ export function splitTextNodes(node: MdNode): void {
   }
   node.children = out;
 }
-

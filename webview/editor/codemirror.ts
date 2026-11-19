@@ -111,7 +111,7 @@ const hashtagPlugin = ViewPlugin.fromClass(
   },
   {
     decorations: (v) => v.decorations,
-  }
+  },
 );
 
 export function initCodeMirror(initialText: string) {
@@ -136,7 +136,7 @@ export function initCodeMirror(initialText: string) {
               text: text,
             });
           }
-          
+
           // Update Milkdown implicitly
           state.isUpdatingFromVSCode = true;
 
@@ -155,7 +155,7 @@ export function initCodeMirror(initialText: string) {
           if (state.editor) {
             state.editor.action(replaceAll(markdownToRender));
           }
-          
+
           setTimeout(() => {
             state.isUpdatingFromVSCode = false;
           }, 50);

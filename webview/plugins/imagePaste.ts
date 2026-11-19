@@ -19,7 +19,9 @@ export const imagePastePlugin = new Plugin({
               if (result) {
                 const parts = result.split(',');
                 const data = parts[1];
-                const ext = file.name ? file.name.split('.').pop() : item.type.split('/')[1] || 'png';
+                const ext = file.name
+                  ? file.name.split('.').pop()
+                  : item.type.split('/')[1] || 'png';
                 if (vscode) {
                   vscode.postMessage({
                     type: 'saveImage',
@@ -41,7 +43,7 @@ export const imagePastePlugin = new Plugin({
       const items = event.dataTransfer?.items;
       if (!items) return false;
       let handled = false;
-      
+
       const pos = view.posAtCoords({ left: event.clientX, top: event.clientY });
       const dropPos = pos ? pos.pos : view.state.selection.from;
 
@@ -56,7 +58,9 @@ export const imagePastePlugin = new Plugin({
               if (result) {
                 const parts = result.split(',');
                 const data = parts[1];
-                const ext = file.name ? file.name.split('.').pop() : item.type.split('/')[1] || 'png';
+                const ext = file.name
+                  ? file.name.split('.').pop()
+                  : item.type.split('/')[1] || 'png';
                 if (vscode) {
                   vscode.postMessage({
                     type: 'saveImage',
@@ -73,6 +77,6 @@ export const imagePastePlugin = new Plugin({
         }
       }
       return handled;
-    }
-  }
+    },
+  },
 });

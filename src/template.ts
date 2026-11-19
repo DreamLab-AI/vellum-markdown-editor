@@ -4,9 +4,11 @@ import { MarkdownLiveProvider } from './editorProvider';
 export async function insertTemplateCommand() {
   const config = vscode.workspace.getConfiguration('markdownLive');
   const templateFolder = config.get<string>('templateFolder');
-  
+
   if (!templateFolder) {
-    vscode.window.showErrorMessage('Template folder not configured. Please set "markdownLive.templateFolder" in settings (e.g., "templates").');
+    vscode.window.showErrorMessage(
+      'Template folder not configured. Please set "markdownLive.templateFolder" in settings (e.g., "templates").',
+    );
     return;
   }
 
@@ -18,24 +20,26 @@ export async function insertTemplateCommand() {
 
   // Find absolute path to template folder (assuming first workspace folder for simplicity)
   const folderUri = vscode.Uri.joinPath(workspaceFolders[0].uri, templateFolder);
-  
+
   // Get all .md files in the folder
   let files: string[] = [];
   try {
     const entries = await vscode.workspace.fs.readDirectory(folderUri);
-    files = entries.filter(([name, type]) => type === vscode.FileType.File && name.endsWith('.md')).map(([name]) => name);
+    files = entries
+      .filter(([name, type]) => type === vscode.FileType.File && name.endsWith('.md'))
+      .map(([name]) => name);
   } catch (err: any) {
     vscode.window.showErrorMessage(`Failed to read template folder: ${err.message}`);
     return;
   }
-  
+
   if (files.length === 0) {
     vscode.window.showInformationMessage('No markdown templates found in the configured folder.');
     return;
   }
 
   const selected = await vscode.window.showQuickPick(files, {
-    placeHolder: 'Select a template to insert'
+    placeHolder: 'Select a template to insert',
   });
 
   if (!selected) return;
@@ -55,7 +59,7 @@ function processTemplate(content: string): string {
   // 1. tp.file.title
   let title = 'Untitled';
   const currentDoc = MarkdownLiveProvider.currentDocument;
-  
+
   const getBasename = (uri: vscode.Uri) => {
     const pathParts = uri.path.split('/');
     const file = pathParts[pathParts.length - 1];
@@ -74,10 +78,10 @@ function processTemplate(content: string): string {
   content = content.replace(/<%\s*tp\.date\.now\((['"])(.*?)\1\)\s*%>/g, (match, quote, format) => {
     return formatDate(new Date(), format);
   });
-  
+
   // 3. tp.date.now() without parameters
   content = content.replace(/<%\s*tp\.date\.now\(\)\s*%>/g, () => {
-    return formatDate(new Date(), "YYYY-MM-DD");
+    return formatDate(new Date(), 'YYYY-MM-DD');
   });
 
   return content;
@@ -85,7 +89,7 @@ function processTemplate(content: string): string {
 
 function formatDate(date: Date, format: string): string {
   const pad = (n: number) => n.toString().padStart(2, '0');
-  
+
   const YYYY = date.getFullYear().toString();
   const MM = pad(date.getMonth() + 1);
   const DD = pad(date.getDate());

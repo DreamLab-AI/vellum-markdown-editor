@@ -19,7 +19,11 @@ declare function acquireVsCodeApi(): { postMessage(message: GraphRequest): void 
   const root = document.getElementById('graph-root');
   if (!root) return;
 
-  const el = <K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text = ''): HTMLElementTagNameMap[K] => {
+  const el = <K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+    className = '',
+    text = '',
+  ): HTMLElementTagNameMap[K] => {
     const node = document.createElement(tag);
     if (className) node.className = className;
     if (text) node.textContent = text;
@@ -75,7 +79,8 @@ declare function acquireVsCodeApi(): { postMessage(message: GraphRequest): void 
 
   const theme = () => {
     const style = getComputedStyle(document.documentElement);
-    const pick = (name: string, fallback: string) => style.getPropertyValue(name).trim() || fallback;
+    const pick = (name: string, fallback: string) =>
+      style.getPropertyValue(name).trim() || fallback;
     return {
       background: pick('--vscode-editor-background', '#ffffff'),
       foreground: pick('--vscode-editor-foreground', '#333333'),
@@ -131,12 +136,26 @@ declare function acquireVsCodeApi(): { postMessage(message: GraphRequest): void 
       background: t.background,
       foreground: t.foreground,
       onActivate: activate,
-      onDragStart: (n, p) => { autoFit = false; layout?.pin(n.id, p.x, p.y); },
-      onDrag: (n, p) => { layout?.pin(n.id, p.x, p.y); },
-      onDragEnd: (n) => { layout?.unpin(n.id); },
+      onDragStart: (n, p) => {
+        autoFit = false;
+        layout?.pin(n.id, p.x, p.y);
+      },
+      onDrag: (n, p) => {
+        layout?.pin(n.id, p.x, p.y);
+      },
+      onDragEnd: (n) => {
+        layout?.unpin(n.id);
+      },
     });
     // Once the reader pans or zooms, the view stops re-fitting itself.
-    for (const type of ['pointerdown', 'wheel'] as const) surface.addEventListener(type, () => { autoFit = false; }, { passive: true });
+    for (const type of ['pointerdown', 'wheel'] as const)
+      surface.addEventListener(
+        type,
+        () => {
+          autoFit = false;
+        },
+        { passive: true },
+      );
     return view;
   }
 
@@ -154,7 +173,8 @@ declare function acquireVsCodeApi(): { postMessage(message: GraphRequest): void 
   }
 
   function show(payload: Extract<GraphPayload, { type: 'graph' }>): void {
-    const recentred = current?.graph.centre !== payload.graph.centre || current?.title !== payload.title;
+    const recentred =
+      current?.graph.centre !== payload.graph.centre || current?.title !== payload.title;
     current = payload;
     const g = payload.graph;
     data = toData(g);
@@ -203,7 +223,12 @@ declare function acquireVsCodeApi(): { postMessage(message: GraphRequest): void 
   // ── Controls ───────────────────────────────────────────────────────────
   fit.addEventListener('click', () => view?.fit());
   depth.addEventListener('change', () => {
-    if (current) vscode.postMessage({ type: 'bounds', depth: Number(depth.value), maxNodes: current.graph.maxNodes });
+    if (current)
+      vscode.postMessage({
+        type: 'bounds',
+        depth: Number(depth.value),
+        maxNodes: current.graph.maxNodes,
+      });
   });
   more.addEventListener('click', () => {
     if (!current) return;
@@ -217,7 +242,10 @@ declare function acquireVsCodeApi(): { postMessage(message: GraphRequest): void 
   search.addEventListener('input', () => {
     const hit = firstMatch();
     if (hit) view?.setSelection(hit.id);
-    if (search.value.trim()) foot.textContent = hit ? `Selected "${hit.label}". Press Enter to open it.` : 'No note in this graph matches.';
+    if (search.value.trim())
+      foot.textContent = hit
+        ? `Selected "${hit.label}". Press Enter to open it.`
+        : 'No note in this graph matches.';
     else describe();
   });
   search.addEventListener('keydown', (e) => {

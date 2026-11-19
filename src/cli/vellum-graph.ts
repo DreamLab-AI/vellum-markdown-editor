@@ -237,7 +237,10 @@ function run(args: Args, vault: Vault): { json: unknown; text: string } {
         ...g.nodes.filter((n) => n.depth > 0).map((n) => `${n.depth}  ${show(n.id)}`),
         ...g.edges.map((e) => `${show(e.source)} -> ${show(e.target)}`),
       ];
-      if (g.truncated) lines.push(`truncated: ${g.hidden} more within ${g.depth} link(s); raise --max (now ${g.maxNodes})`);
+      if (g.truncated)
+        lines.push(
+          `truncated: ${g.hidden} more within ${g.depth} link(s); raise --max (now ${g.maxNodes})`,
+        );
       return { json: g, text: lines.join('\n') || 'no linked notes' };
     }
     case 'orphans': {

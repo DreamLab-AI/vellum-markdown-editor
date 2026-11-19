@@ -4,11 +4,7 @@ import { clampPosition } from '../src/ai/reference';
 import { currentSelectionInfo } from './utils/selectionInfo';
 import { setUnresolvedTargets } from './plugins/wikilink';
 import { splitWikilinks } from '../src/links/wikilink';
-import {
-  callCommand,
-  insert,
-  replaceAll,
-} from '@milkdown/utils';
+import { callCommand, insert, replaceAll } from '@milkdown/utils';
 import {
   toggleLinkCommand,
   wrapInHeadingCommand,
@@ -28,7 +24,8 @@ function scrollContainer(): Element | null {
   let el: Element | null = document.querySelector('.ProseMirror');
   while (el && el !== document.documentElement) {
     const overflow = getComputedStyle(el).overflowY;
-    if ((overflow === 'auto' || overflow === 'scroll') && el.scrollHeight > el.clientHeight) return el;
+    if ((overflow === 'auto' || overflow === 'scroll') && el.scrollHeight > el.clientHeight)
+      return el;
     el = el.parentElement;
   }
   return document.scrollingElement;
@@ -86,7 +83,9 @@ export function setupMessageListener() {
             const scroller = scrollContainer();
             const scrollTop = scroller?.scrollTop ?? 0;
             let anchor = -1;
-            state.editor.action((ctx) => { anchor = ctx.get(editorViewCtx).state.selection.anchor; });
+            state.editor.action((ctx) => {
+              anchor = ctx.get(editorViewCtx).state.selection.anchor;
+            });
 
             state.editor.action(replaceAll(markdownToRender));
 
@@ -94,16 +93,26 @@ export function setupMessageListener() {
               const view = ctx.get(editorViewCtx);
               if (anchor < 0) return;
               try {
-                const pos = view.state.doc.resolve(clampPosition(anchor, view.state.doc.content.size));
+                const pos = view.state.doc.resolve(
+                  clampPosition(anchor, view.state.doc.content.size),
+                );
                 view.dispatch(view.state.tr.setSelection(TextSelection.near(pos)));
-              } catch { /* the old position has no equivalent */ }
+              } catch {
+                /* the old position has no equivalent */
+              }
               // Remember how the editor itself writes this document, so the
               // debounced change listener can tell it from a real edit.
-              try { state.externalSerialised = ctx.get(serializerCtx)(view.state.doc); } catch { state.externalSerialised = null; }
+              try {
+                state.externalSerialised = ctx.get(serializerCtx)(view.state.doc);
+              } catch {
+                state.externalSerialised = null;
+              }
             });
             if (scroller) {
               scroller.scrollTop = scrollTop;
-              requestAnimationFrame(() => { scroller.scrollTop = scrollTop; });
+              requestAnimationFrame(() => {
+                scroller.scrollTop = scrollTop;
+              });
             }
             setTimeout(() => {
               state.isUpdatingFromVSCode = false;
@@ -116,7 +125,7 @@ export function setupMessageListener() {
         const themeClass = message.theme === 2 ? 'vscode-dark' : 'vscode-light';
         document.body.className = themeClass;
         break;
-      
+
       case 'linkState':
         setUnresolvedTargets(message.unresolved);
         break;
@@ -142,7 +151,9 @@ export function setupMessageListener() {
               view.focus();
             }
           });
-          setTimeout(() => { state.forceSync = false; }, 100);
+          setTimeout(() => {
+            state.forceSync = false;
+          }, 100);
         }
         break;
 
@@ -151,12 +162,14 @@ export function setupMessageListener() {
           const selection = state.cmView.state.selection.main;
           state.cmView.dispatch({
             changes: { from: selection.from, to: selection.to, insert: message.text },
-            selection: { anchor: selection.from + message.text.length }
+            selection: { anchor: selection.from + message.text.length },
           });
         } else if (state.editor) {
           state.forceSync = true;
           state.editor.action(insert(message.text));
-          setTimeout(() => { state.forceSync = false; }, 100);
+          setTimeout(() => {
+            state.forceSync = false;
+          }, 100);
         }
         break;
 
@@ -166,10 +179,10 @@ export function setupMessageListener() {
           state.editor.action((ctx: any) => {
             const view = ctx.get(editorViewCtx);
             const { state: pmState, dispatch } = view;
-            
+
             let tr = pmState.tr;
             let posOffset = 0;
-            
+
             pmState.doc.descendants((node: any, pos: number) => {
               if (node.isText && node.text) {
                 const globalPos = pos + posOffset;
@@ -178,20 +191,20 @@ export function setupMessageListener() {
                   const start = globalPos + match.index!;
                   const end = start + match[0].length;
                   tr = tr.replaceWith(start, end, pmState.schema.text(`[^${message.newId}]`));
-                  posOffset += (message.newId.length - message.oldId.length);
+                  posOffset += message.newId.length - message.oldId.length;
                 } else {
                   const defMatch = node.text.match(new RegExp(`^\\[\\^${message.oldId}\\]:`));
                   if (defMatch) {
                     const start = globalPos;
                     const end = start + defMatch[0].length;
                     tr = tr.replaceWith(start, end, pmState.schema.text(`[^${message.newId}]:`));
-                    posOffset += (message.newId.length - message.oldId.length);
+                    posOffset += message.newId.length - message.oldId.length;
                   }
                 }
               }
               return true;
             });
-            
+
             if (tr.docChanged) dispatch(tr);
           });
         }
@@ -201,7 +214,9 @@ export function setupMessageListener() {
         if (state.editor && message.url) {
           state.forceSync = true;
           state.editor.action(callCommand(toggleLinkCommand.key, { href: message.url }));
-          setTimeout(() => { state.forceSync = false; }, 100);
+          setTimeout(() => {
+            state.forceSync = false;
+          }, 100);
         }
         break;
 
@@ -209,14 +224,17 @@ export function setupMessageListener() {
         if (state.editor) {
           state.forceSync = true;
           state.editor.action((ctx: any) => {
-             const view = ctx.get(editorViewCtx);
-             const { state: pmState, dispatch } = view;
-             const imageNode = pmState.schema.nodes.image.create({ src: message.url, alt: 'image' });
-             const pastePos = message.pastePos !== undefined ? message.pastePos : pmState.selection.from;
-             const tr = pmState.tr.insert(pastePos, imageNode);
-             dispatch(tr);
+            const view = ctx.get(editorViewCtx);
+            const { state: pmState, dispatch } = view;
+            const imageNode = pmState.schema.nodes.image.create({ src: message.url, alt: 'image' });
+            const pastePos =
+              message.pastePos !== undefined ? message.pastePos : pmState.selection.from;
+            const tr = pmState.tr.insert(pastePos, imageNode);
+            dispatch(tr);
           });
-          setTimeout(() => { state.forceSync = false; }, 100);
+          setTimeout(() => {
+            state.forceSync = false;
+          }, 100);
         }
         break;
 
@@ -238,7 +256,9 @@ export function handleVSCodeCommand(command: string) {
   const withForceSync = (action: () => void) => {
     state.forceSync = true;
     action();
-    setTimeout(() => { state.forceSync = false; }, 100);
+    setTimeout(() => {
+      state.forceSync = false;
+    }, 100);
   };
 
   switch (command) {
@@ -255,9 +275,11 @@ export function handleVSCodeCommand(command: string) {
       if (vscode) vscode.postMessage({ type: 'save' });
       break;
     case 'insertTable':
-      withForceSync(() => state.editor!.action(
-        insert(`\n| Column 1 | Column 2 |\n| -------- | -------- |\n| Text     | Text     |\n`),
-      ));
+      withForceSync(() =>
+        state.editor!.action(
+          insert(`\n| Column 1 | Column 2 |\n| -------- | -------- |\n| Text     | Text     |\n`),
+        ),
+      );
       break;
     case 'insertHeading1':
       withForceSync(() => state.editor!.action(callCommand(wrapInHeadingCommand.key, 1)));

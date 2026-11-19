@@ -17,9 +17,13 @@ export function activate(context: vscode.ExtensionContext) {
   MarkdownLiveProvider.linkIndex = linkIndex;
   context.subscriptions.push(
     linkIndex.onDidChange(() => MarkdownLiveProvider.postLinkState()),
-    vscode.commands.registerCommand('markdown-live.copyLinkContext', () => copyLinkContext(linkIndex)),
+    vscode.commands.registerCommand('markdown-live.copyLinkContext', () =>
+      copyLinkContext(linkIndex),
+    ),
     // The note graph loads nothing until this command runs.
-    vscode.commands.registerCommand('markdown-live.showGraph', () => GraphPanel.show(context.extensionUri, linkIndex)),
+    vscode.commands.registerCommand('markdown-live.showGraph', () =>
+      GraphPanel.show(context.extensionUri, linkIndex),
+    ),
   );
 
   // Register file deletion handler for cleaning up attachments
@@ -28,13 +32,13 @@ export function activate(context: vscode.ExtensionContext) {
   // Register Sidebar Webview Provider
   const sidebarProvider = new SidebarProvider(context.extensionUri);
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(SidebarProvider.viewType, sidebarProvider)
+    vscode.window.registerWebviewViewProvider(SidebarProvider.viewType, sidebarProvider),
   );
 
   // File system watcher to refresh sidebar when markdown files are modified
   const mdWatcher = vscode.workspace.createFileSystemWatcher('**/*.md');
   context.subscriptions.push(mdWatcher);
-  
+
   mdWatcher.onDidCreate(() => sidebarProvider.refresh());
   mdWatcher.onDidChange(() => sidebarProvider.refresh());
   mdWatcher.onDidDelete(() => sidebarProvider.refresh());
@@ -42,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('markdown-live.refreshSidebar', () => {
       sidebarProvider.refresh();
-    })
+    }),
   );
 
   // Register the command to open Live Editor manually
@@ -93,6 +97,6 @@ export function activate(context: vscode.ExtensionContext) {
     }),
     vscode.commands.registerCommand('markdown-live.newNoteFromTemplate', () => {
       NoteManager.createNewNoteFromTemplate().then(() => sidebarProvider.refresh());
-    })
+    }),
   );
 }

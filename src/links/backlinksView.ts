@@ -31,11 +31,16 @@ interface MentionNode {
 export function activeNote(): vscode.Uri | undefined {
   const input = vscode.window.tabGroups.activeTabGroup.activeTab?.input;
   const uri =
-    input instanceof vscode.TabInputCustom || input instanceof vscode.TabInputText ? input.uri : undefined;
+    input instanceof vscode.TabInputCustom || input instanceof vscode.TabInputText
+      ? input.uri
+      : undefined;
   return uri && /\.(md|markdown)$/i.test(uri.path) ? uri : undefined;
 }
 
-function group(items: Array<(Backlink | UnlinkedMention) & { line: number; start: number; end: number }>, kind: 'linked' | 'unlinked'): FileNode[] {
+function group(
+  items: Array<(Backlink | UnlinkedMention) & { line: number; start: number; end: number }>,
+  kind: 'linked' | 'unlinked',
+): FileNode[] {
   const files = new Map<string, FileNode>();
   for (const it of items) {
     const key = it.source.toString();
@@ -44,7 +49,15 @@ function group(items: Array<(Backlink | UnlinkedMention) & { line: number; start
       file = { kind: 'file', group: kind, uri: it.source, path: it.sourcePath, mentions: [] };
       files.set(key, file);
     }
-    file.mentions.push({ kind: 'mention', group: kind, uri: it.source, line: it.line, start: it.start, end: it.end, text: it.text });
+    file.mentions.push({
+      kind: 'mention',
+      group: kind,
+      uri: it.source,
+      line: it.line,
+      start: it.start,
+      end: it.end,
+      text: it.text,
+    });
   }
   return [...files.values()];
 }
@@ -103,12 +116,19 @@ export class BacklinksProvider implements vscode.TreeDataProvider<Node>, vscode.
       return item;
     }
     if (node.kind === 'file') {
-      const item = new vscode.TreeItem(baseName(node.path), vscode.TreeItemCollapsibleState.Expanded);
+      const item = new vscode.TreeItem(
+        baseName(node.path),
+        vscode.TreeItemCollapsibleState.Expanded,
+      );
       item.resourceUri = node.uri;
       item.iconPath = vscode.ThemeIcon.File;
       const dir = node.path.includes('/') ? node.path.slice(0, node.path.lastIndexOf('/')) : '';
       item.description = `${dir}${dir ? ' · ' : ''}${node.mentions.length}`;
-      item.command = { command: 'markdown-live.openNote', title: 'Open note', arguments: [node.uri] };
+      item.command = {
+        command: 'markdown-live.openNote',
+        title: 'Open note',
+        arguments: [node.uri],
+      };
       item.contextValue = 'backlink-file';
       return item;
     }
@@ -131,7 +151,9 @@ export class BacklinksProvider implements vscode.TreeDataProvider<Node>, vscode.
     if (!this.current) return [];
     await this.index.whenReady();
     const linked = group(
-      this.index.backlinks(this.current).map((b) => ({ ...b, line: b.link.line, start: b.link.start, end: b.link.end })),
+      this.index
+        .backlinks(this.current)
+        .map((b) => ({ ...b, line: b.link.line, start: b.link.start, end: b.link.end })),
       'linked',
     );
     const unlinked = group(this.index.unlinkedMentions(this.current), 'unlinked');
@@ -143,7 +165,11 @@ export class BacklinksProvider implements vscode.TreeDataProvider<Node>, vscode.
 }
 
 /** Turn a plain-text mention into a wikilink to `target`. */
-export async function linkMention(index: LinkIndex, node: unknown, target: vscode.Uri | undefined): Promise<void> {
+export async function linkMention(
+  index: LinkIndex,
+  node: unknown,
+  target: vscode.Uri | undefined,
+): Promise<void> {
   const m = node as MentionNode | undefined;
   if (!m || m.kind !== 'mention' || m.group !== 'unlinked' || !target) return;
   const doc = await vscode.workspace.openTextDocument(m.uri);

@@ -10,12 +10,21 @@ import * as vscode from 'vscode';
 import { activeNote } from '../links/backlinksView';
 import type { LinkIndex } from '../links/linkIndex';
 import {
-  buildLinkContext, chooseTarget, claudeOpenParts, CLAUDE_EXTENSION_ID, MAX_LINK_PROMPT, formatReference, locateLines, SelectionInfo,
+  buildLinkContext,
+  chooseTarget,
+  claudeOpenParts,
+  CLAUDE_EXTENSION_ID,
+  MAX_LINK_PROMPT,
+  formatReference,
+  locateLines,
+  SelectionInfo,
 } from './reference';
 
 const MAX_TEXT = 200_000;
-const relative = (uri: vscode.Uri) => vscode.workspace.asRelativePath(uri, false).replace(/\\/g, '/');
-const line = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) && v > 0 && v < 10_000_000 ? v : undefined);
+const relative = (uri: vscode.Uri) =>
+  vscode.workspace.asRelativePath(uri, false).replace(/\\/g, '/');
+const line = (v: unknown) =>
+  typeof v === 'number' && Number.isInteger(v) && v > 0 && v < 10_000_000 ? v : undefined;
 const short = (v: unknown) => (typeof v === 'string' ? v.slice(0, 400) : '');
 
 /** Validate a selection message from the webview. */
@@ -35,12 +44,17 @@ function located(document: vscode.TextDocument, info: SelectionInfo): vscode.Ran
   const last = Math.min(r.end, document.lineCount) - 1;
   const first = Math.min(r.start - 1, last);
   // No selected text: a cursor on the line. Otherwise whole lines.
-  return info.text ? new vscode.Range(first, 0, last, document.lineAt(last).text.length) : new vscode.Range(first, 0, first, 0);
+  return info.text
+    ? new vscode.Range(first, 0, last, document.lineAt(last).text.length)
+    : new vscode.Range(first, 0, first, 0);
 }
 
 function referenceFor(document: vscode.TextDocument, info: SelectionInfo): string {
   const range = info.text ? located(document, info) : undefined;
-  return formatReference(relative(document.uri), range && { start: range.start.line + 1, end: range.end.line + 1 });
+  return formatReference(
+    relative(document.uri),
+    range && { start: range.start.line + 1, end: range.end.line + 1 },
+  );
 }
 
 /**
@@ -48,8 +62,13 @@ function referenceFor(document: vscode.TextDocument, info: SelectionInfo): strin
  * lines selected. Anything that reads the active editor's selection, Claude
  * Code included, then sees it.
  */
-export async function revealSelection(document: vscode.TextDocument, info: SelectionInfo): Promise<vscode.TextEditor> {
-  const open = vscode.window.visibleTextEditors.find((ed) => ed.document.uri.toString() === document.uri.toString());
+export async function revealSelection(
+  document: vscode.TextDocument,
+  info: SelectionInfo,
+): Promise<vscode.TextEditor> {
+  const open = vscode.window.visibleTextEditors.find(
+    (ed) => ed.document.uri.toString() === document.uri.toString(),
+  );
   return vscode.window.showTextDocument(document, {
     viewColumn: open?.viewColumn ?? vscode.ViewColumn.Beside,
     selection: located(document, info),
@@ -59,7 +78,10 @@ export async function revealSelection(document: vscode.TextDocument, info: Selec
 }
 
 /** Copy `@path#start-end` for the selection (or `@path` with nothing selected). */
-export async function copyReference(document: vscode.TextDocument, info: SelectionInfo): Promise<void> {
+export async function copyReference(
+  document: vscode.TextDocument,
+  info: SelectionInfo,
+): Promise<void> {
   const reference = referenceFor(document, info);
   await vscode.env.clipboard.writeText(reference);
   vscode.window.setStatusBarMessage(`Copied ${reference}`, 4000);
@@ -68,7 +90,9 @@ export async function copyReference(document: vscode.TextDocument, info: Selecti
 /** Returns false when the prompt is too long for a link; it is on the clipboard either way. */
 async function openInClaude(prompt: string): Promise<boolean> {
   if (prompt.length > MAX_LINK_PROMPT) {
-    void vscode.window.showInformationMessage('That is too long to pre-fill. It is on the clipboard: paste it into Claude Code.');
+    void vscode.window.showInformationMessage(
+      'That is too long to pre-fill. It is on the clipboard: paste it into Claude Code.',
+    );
     return false;
   }
   return vscode.env.openExternal(vscode.Uri.from(claudeOpenParts(prompt)));
@@ -77,7 +101,10 @@ async function openInClaude(prompt: string): Promise<boolean> {
 const hasClaude = () => !!vscode.extensions.getExtension(CLAUDE_EXTENSION_ID);
 
 /** "Send Selection to AI Assistant". */
-export async function sendToAssistant(document: vscode.TextDocument, info: SelectionInfo): Promise<void> {
+export async function sendToAssistant(
+  document: vscode.TextDocument,
+  info: SelectionInfo,
+): Promise<void> {
   const config = vscode.workspace.getConfiguration('markdownLive');
   const commands = await vscode.commands.getCommands(true);
   const target = chooseTarget(config.get<string>('aiTarget'), {
@@ -109,7 +136,10 @@ export async function sendToAssistant(document: vscode.TextDocument, info: Selec
           /* fall through to the message below */
         }
       }
-      vscode.window.setStatusBarMessage(`Selection shown to Claude Code; ${reference} copied`, 5000);
+      vscode.window.setStatusBarMessage(
+        `Selection shown to Claude Code; ${reference} copied`,
+        5000,
+      );
       return;
     }
     vscode.window.setStatusBarMessage(`Copied ${reference}`, 4000);
@@ -120,7 +150,14 @@ export async function sendToAssistant(document: vscode.TextDocument, info: Selec
     try {
       const name = document.uri.path.split('/').pop() || 'note.md';
       await vscode.commands.executeCommand('antigravity.addContext', {
-        uri: document.uri, name, label: `Selection from ${name}`, text: info.text, content: info.text, value: info.text, type: 'file', kind: 'file',
+        uri: document.uri,
+        name,
+        label: `Selection from ${name}`,
+        text: info.text,
+        content: info.text,
+        value: info.text,
+        type: 'file',
+        kind: 'file',
       });
       return;
     } catch {
@@ -153,9 +190,16 @@ export async function copyLinkContext(index: LinkIndex): Promise<void> {
     return;
   }
   await index.whenReady();
-  const backlinks = index.backlinks(note).map((b) => ({ path: b.sourcePath, line: b.link.line + 1 }));
+  const backlinks = index
+    .backlinks(note)
+    .map((b) => ({ path: b.sourcePath, line: b.link.line + 1 }));
   const outgoing = index.outgoing(note).flatMap((o) => (o.target ? [relative(o.target)] : []));
-  const text = buildLinkContext({ note: relative(note), backlinks, outgoing, unresolved: index.unresolvedTargets(note) });
+  const text = buildLinkContext({
+    note: relative(note),
+    backlinks,
+    outgoing,
+    unresolved: index.unresolvedTargets(note),
+  });
   await vscode.env.clipboard.writeText(text);
 
   const summary = `Copied link context: ${new Set(backlinks.map((b) => b.path)).size} linking, ${new Set(outgoing).size} linked.`;
@@ -164,5 +208,6 @@ export async function copyLinkContext(index: LinkIndex): Promise<void> {
     return;
   }
   const open = 'Open in Claude Code';
-  if ((await vscode.window.showInformationMessage(summary, open)) === open) await openInClaude(`${text}\n\n`);
+  if ((await vscode.window.showInformationMessage(summary, open)) === open)
+    await openInClaude(`${text}\n\n`);
 }

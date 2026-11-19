@@ -4,42 +4,41 @@ import { escapeHtml } from '../security';
 export function getHtmlForWebview(
   webview: vscode.Webview,
   document: vscode.TextDocument,
-  context: vscode.ExtensionContext
+  context: vscode.ExtensionContext,
 ): string {
-  
-    const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview.js'),
-    );
-    const styleUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview.css'),
-    );
+  const scriptUri = webview.asWebviewUri(
+    vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview.js'),
+  );
+  const styleUri = webview.asWebviewUri(
+    vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview.css'),
+  );
 
-    const config = vscode.workspace.getConfiguration('markdownLive');
-    const fontFamilySetting = config.get<string>('fontFamily', 'sans-serif');
-    const imagePublicPath = config.get<string>('imagePublicPath', '');
-    const enableSlashCommand = config.get<boolean>('enableSlashCommand', true);
-    const tableDisplayMode = config.get<string>('tableDisplayMode', 'scroll');
-    const fontFamilyCss =
-      fontFamilySetting === 'serif'
-        ? "'Merriweather', 'Georgia', serif !important"
-        : "'Roboto', sans-serif !important";
+  const config = vscode.workspace.getConfiguration('markdownLive');
+  const fontFamilySetting = config.get<string>('fontFamily', 'sans-serif');
+  const imagePublicPath = config.get<string>('imagePublicPath', '');
+  const enableSlashCommand = config.get<boolean>('enableSlashCommand', true);
+  const tableDisplayMode = config.get<string>('tableDisplayMode', 'scroll');
+  const fontFamilyCss =
+    fontFamilySetting === 'serif'
+      ? "'Merriweather', 'Georgia', serif !important"
+      : "'Roboto', sans-serif !important";
 
-    // Base URI for relative images
-    const docDir = vscode.Uri.joinPath(document.uri, '..');
-    const baseUri = webview.asWebviewUri(docDir).toString() + '/';
+  // Base URI for relative images
+  const docDir = vscode.Uri.joinPath(document.uri, '..');
+  const baseUri = webview.asWebviewUri(docDir).toString() + '/';
 
-    const configLang = vscode.workspace
-      .getConfiguration('markdownLive')
-      .get<string>('language', 'en');
-    const propertiesLabel = configLang === 'vi' ? 'Thuộc tính của ghi chú' : 'Properties';
+  const configLang = vscode.workspace
+    .getConfiguration('markdownLive')
+    .get<string>('language', 'en');
+  const propertiesLabel = configLang === 'vi' ? 'Thuộc tính của ghi chú' : 'Properties';
 
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    const workspaceRootUriStr =
-      workspaceFolders && workspaceFolders.length > 0
-        ? webview.asWebviewUri(workspaceFolders[0].uri).toString()
-        : '';
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  const workspaceRootUriStr =
+    workspaceFolders && workspaceFolders.length > 0
+      ? webview.asWebviewUri(workspaceFolders[0].uri).toString()
+      : '';
 
-    return `
+  return `
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -1011,5 +1010,5 @@ export function getHtmlForWebview(
                 <script src="${scriptUri}"></script>
             </body>
             </html>`;
-   // remove last brace
+  // remove last brace
 }

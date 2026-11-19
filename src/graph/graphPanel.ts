@@ -37,7 +37,10 @@ export class GraphPanel implements vscode.Disposable {
   /** The index or the note changed while the panel was hidden. */
   private stale = false;
 
-  private constructor(extensionUri: vscode.Uri, private readonly index: LinkIndex) {
+  private constructor(
+    extensionUri: vscode.Uri,
+    private readonly index: LinkIndex,
+  ) {
     const dist = vscode.Uri.joinPath(extensionUri, 'dist');
     this.bounds = graphBounds({
       depth: vscode.workspace.getConfiguration('markdownLive').get<number>('graph.depth'),
@@ -57,7 +60,9 @@ export class GraphPanel implements vscode.Disposable {
       vscode.window.tabGroups.onDidChangeTabGroups(() => this.follow()),
       this.index.onDidChange(() => void this.refresh()),
       // A hidden panel does no work; it catches up when it is shown again.
-      this.panel.onDidChangeViewState(() => { if (this.panel.visible && this.stale) void this.refresh(); }),
+      this.panel.onDidChangeViewState(() => {
+        if (this.panel.visible && this.stale) void this.refresh();
+      }),
     );
     void this.refresh();
   }
@@ -100,13 +105,27 @@ export class GraphPanel implements vscode.Disposable {
 
   private payload(generation: number): GraphPayload {
     this.uris = new Map();
-    if (!this.note) return { type: 'empty', generation, message: 'Open a Markdown note to see the notes it links to.' };
+    if (!this.note)
+      return {
+        type: 'empty',
+        generation,
+        message: 'Open a Markdown note to see the notes it links to.',
+      };
     const name = baseName(this.note.path);
     if (!vscode.workspace.getWorkspaceFolder(this.note)) {
-      return { type: 'empty', generation, message: `"${name}" is outside the workspace folders, so its links are not indexed.` };
+      return {
+        type: 'empty',
+        generation,
+        message: `"${name}" is outside the workspace folders, so its links are not indexed.`,
+      };
     }
     const found = this.index.neighbourhood(this.note, this.bounds);
-    if (!found) return { type: 'empty', generation, message: `"${name}" is not in the link index. It may have been deleted, excluded or be too large.` };
+    if (!found)
+      return {
+        type: 'empty',
+        generation,
+        message: `"${name}" is not in the link index. It may have been deleted, excluded or be too large.`,
+      };
     this.uris = found.uris;
     return {
       type: 'graph',

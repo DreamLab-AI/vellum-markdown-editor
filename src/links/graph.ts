@@ -52,18 +52,25 @@ const clampInt = (value: unknown, range: { min: number; max: number; default: nu
 
 /** Bounds as the graph will apply them: integers inside the supported ranges. */
 export function graphBounds(bounds: GraphBounds = {}): { depth: number; maxNodes: number } {
-  return { depth: clampInt(bounds.depth, GRAPH_DEPTH), maxNodes: clampInt(bounds.maxNodes, GRAPH_NODES) };
+  return {
+    depth: clampInt(bounds.depth, GRAPH_DEPTH),
+    maxNodes: clampInt(bounds.maxNodes, GRAPH_NODES),
+  };
 }
 
 // `[[Foo]]`, `[[foo.md]]` and `[[./Foo]]` name one missing note, as they would name one note.
-const missingId = (target: string): string => `/?${(normalisePath(stripExt(target.trim())) || target.trim()).toLowerCase()}`;
+const missingId = (target: string): string =>
+  `/?${(normalisePath(stripExt(target.trim())) || target.trim()).toLowerCase()}`;
 
 /**
  * Every note-to-note link in a root, and every wikilink that points at nothing.
  * A link resolves the way it does everywhere else in Vellum: `createResolver`
  * gives `resolveLink`'s answers from an index built once per call.
  */
-function adjacency(notes: readonly GraphNote[]): { out: Map<string, Set<string>>; labels: Map<string, string> } {
+function adjacency(notes: readonly GraphNote[]): {
+  out: Map<string, Set<string>>;
+  labels: Map<string, string>;
+} {
   const paths = notes.map((n) => n.path);
   const resolve = createResolver(paths);
   const out = new Map<string, Set<string>>(paths.map((p) => [p, new Set<string>()]));
@@ -82,7 +89,12 @@ function adjacency(notes: readonly GraphNote[]): { out: Map<string, Set<string>>
         // The shortest spelling, then the first in order: the same whichever note is read first.
         const label = link.target.trim();
         const held = labels.get(id);
-        if (held === undefined || label.length < held.length || (label.length === held.length && label < held)) labels.set(id, label);
+        if (
+          held === undefined ||
+          label.length < held.length ||
+          (label.length === held.length && label < held)
+        )
+          labels.set(id, label);
       }
     }
   }
@@ -94,7 +106,11 @@ function adjacency(notes: readonly GraphNote[]): { out: Map<string, Set<string>>
  * links among them. Nearer notes are kept first when `maxNodes` is reached, and
  * the result says so. Undefined when `centre` is not one of `notes`.
  */
-export function noteNeighbourhood(notes: readonly GraphNote[], centre: string, bounds: GraphBounds = {}): NoteGraph | undefined {
+export function noteNeighbourhood(
+  notes: readonly GraphNote[],
+  centre: string,
+  bounds: GraphBounds = {},
+): NoteGraph | undefined {
   if (!notes.some((n) => n.path === centre)) return undefined;
   const { depth, maxNodes } = graphBounds(bounds);
   const { out, labels } = adjacency(notes);
@@ -116,8 +132,11 @@ export function noteNeighbourhood(notes: readonly GraphNote[], centre: string, b
   let frontier = [centre];
   for (let hop = 1; hop <= depth && frontier.length; hop++) {
     const reached = new Set<string>();
-    for (const id of frontier) for (const next of both.get(id) ?? []) if (!reach.has(next)) reached.add(next);
-    frontier = [...reached].sort((a, b) => Number(labels.has(a)) - Number(labels.has(b)) || a.localeCompare(b));
+    for (const id of frontier)
+      for (const next of both.get(id) ?? []) if (!reach.has(next)) reached.add(next);
+    frontier = [...reached].sort(
+      (a, b) => Number(labels.has(a)) - Number(labels.has(b)) || a.localeCompare(b),
+    );
     for (const id of frontier) reach.set(id, hop);
   }
   const hidden = Math.max(0, reach.size - maxNodes);
@@ -125,13 +144,19 @@ export function noteNeighbourhood(notes: readonly GraphNote[], centre: string, b
 
   const shown = [...depths.keys()];
   const names = new Map<string, number>();
-  for (const id of shown) if (!labels.has(id)) names.set(baseName(id).toLowerCase(), (names.get(baseName(id).toLowerCase()) ?? 0) + 1);
+  for (const id of shown)
+    if (!labels.has(id))
+      names.set(baseName(id).toLowerCase(), (names.get(baseName(id).toLowerCase()) ?? 0) + 1);
   const nodes: NoteGraphNode[] = shown.map((id) => {
     const missing = labels.has(id);
     const node: NoteGraphNode = {
       id,
       // Two shown notes with one name are told apart by their folders.
-      label: missing ? labels.get(id)! : names.get(baseName(id).toLowerCase())! > 1 ? stripExt(id) : baseName(id),
+      label: missing
+        ? labels.get(id)!
+        : names.get(baseName(id).toLowerCase())! > 1
+          ? stripExt(id)
+          : baseName(id),
       missing,
       degree: both.get(id)?.size ?? 0,
       depth: depths.get(id)!,
@@ -141,7 +166,8 @@ export function noteNeighbourhood(notes: readonly GraphNote[], centre: string, b
   });
   const edges: NoteGraph['edges'] = [];
   for (const source of shown) {
-    for (const target of out.get(source) ?? []) if (depths.has(target)) edges.push({ source, target });
+    for (const target of out.get(source) ?? [])
+      if (depths.has(target)) edges.push({ source, target });
   }
   edges.sort((a, b) => a.source.localeCompare(b.source) || a.target.localeCompare(b.target));
   return { centre, nodes, edges, truncated: hidden > 0, hidden, depth, maxNodes };

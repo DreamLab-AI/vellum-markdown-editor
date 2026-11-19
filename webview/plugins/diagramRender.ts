@@ -4,8 +4,7 @@
 import { render, PeleError } from 'pele';
 
 export type DiagramResult =
-  | { ok: true; svg: string; type: string }
-  | { ok: false; message: string; line?: number };
+  { ok: true; svg: string; type: string } | { ok: false; message: string; line?: number };
 
 /** Render Mermaid source to an SVG string. Never throws. */
 export function renderDiagram(source: string): DiagramResult {
@@ -46,7 +45,10 @@ function scrub(root: ParentNode): void {
     for (const attr of Array.from(el.attributes)) {
       const name = attr.name.toLowerCase();
       if (name.startsWith('on')) el.removeAttribute(attr.name);
-      else if (URL_ATTRS.has(name) && (name === 'srcdoc' || /^\s*(javascript|vbscript|data:text\/html)/i.test(attr.value))) {
+      else if (
+        URL_ATTRS.has(name) &&
+        (name === 'srcdoc' || /^\s*(javascript|vbscript|data:text\/html)/i.test(attr.value))
+      ) {
         el.removeAttribute(attr.name);
       }
     }
@@ -63,7 +65,8 @@ function scrub(root: ParentNode): void {
 export function sanitiseSvg(svg: string): SVGElement | null {
   const doc = new DOMParser().parseFromString(svg, 'image/svg+xml');
   const root = doc.documentElement;
-  if (!root || root.nodeName.toLowerCase() !== 'svg' || doc.querySelector('parsererror')) return null;
+  if (!root || root.nodeName.toLowerCase() !== 'svg' || doc.querySelector('parsererror'))
+    return null;
   scrub(root);
   return document.importNode(root, true) as unknown as SVGElement;
 }

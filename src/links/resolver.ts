@@ -6,7 +6,8 @@ const EXT = /\.(md|markdown)$/i;
 
 export const stripExt = (p: string): string => p.replace(EXT, '');
 export const baseName = (p: string): string => stripExt(p.slice(p.lastIndexOf('/') + 1));
-export const dirName = (p: string): string => (p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '');
+export const dirName = (p: string): string =>
+  p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '';
 
 /** Collapse `.` and `..`; returns null if the path climbs out of the root. */
 export function normalisePath(path: string): string | null {
@@ -48,7 +49,11 @@ export function wikiCandidates(target: string, notes: readonly string[]): string
  * note name alone. Among several matches: the source's own folder first, then
  * the shallowest path. Matching is case-insensitive, as in Obsidian.
  */
-export function resolveWiki(target: string, source: string, notes: readonly string[]): string | null {
+export function resolveWiki(
+  target: string,
+  source: string,
+  notes: readonly string[],
+): string | null {
   if (!target.trim()) return source;
   return closest(wikiCandidates(target, notes), source);
 }
@@ -63,8 +68,14 @@ export function resolveMd(href: string, source: string, notes: readonly string[]
   return notes.find((n) => n.toLowerCase() === lower) ?? null;
 }
 
-export function resolveLink(link: NoteLink, source: string, notes: readonly string[]): string | null {
-  return link.kind === 'wiki' ? resolveWiki(link.target, source, notes) : resolveMd(link.target, source, notes);
+export function resolveLink(
+  link: NoteLink,
+  source: string,
+  notes: readonly string[],
+): string | null {
+  return link.kind === 'wiki'
+    ? resolveWiki(link.target, source, notes)
+    : resolveMd(link.target, source, notes);
 }
 
 /**
@@ -72,7 +83,9 @@ export function resolveLink(link: NoteLink, source: string, notes: readonly stri
  * once, so each lookup costs the size of its answer, not of the vault. It
  * returns exactly what `resolveLink(link, source, notes)` returns.
  */
-export function createResolver(notes: readonly string[]): (link: NoteLink, source: string) => string | null {
+export function createResolver(
+  notes: readonly string[],
+): (link: NoteLink, source: string) => string | null {
   const exact = new Map<string, string[]>();
   const suffix = new Map<string, string[]>();
   const anyCase = new Map<string, string>();
@@ -86,7 +99,8 @@ export function createResolver(notes: readonly string[]): (link: NoteLink, sourc
     const key = stripExt(note).toLowerCase();
     add(exact, key, note);
     // Every tail that starts at a folder boundary: what `endsWith('/' + target)` accepts.
-    for (let at = key.indexOf('/'); at !== -1; at = key.indexOf('/', at + 1)) add(suffix, key.slice(at + 1), note);
+    for (let at = key.indexOf('/'); at !== -1; at = key.indexOf('/', at + 1))
+      add(suffix, key.slice(at + 1), note);
     const lower = note.toLowerCase();
     if (!anyCase.has(lower)) anyCase.set(lower, note);
   }
@@ -126,7 +140,10 @@ export function relativeHref(source: string, note: string): string {
   let i = 0;
   while (i < from.length && i < to.length - 1 && from[i] === to[i]) i++;
   const rel = [...from.slice(i).map(() => '..'), ...to.slice(i)].join('/');
-  return rel.split('/').map((s) => (s === '..' ? s : encodeURIComponent(s))).join('/');
+  return rel
+    .split('/')
+    .map((s) => (s === '..' ? s : encodeURIComponent(s)))
+    .join('/');
 }
 
 export interface LinkEdit {
@@ -160,19 +177,41 @@ export function planRenameEdits(
       if (!dest) continue;
       const destAfter = moved(dest);
       if (link.kind === 'wiki') {
-        if (resolveWiki(link.target, sourceAfter, after) === destAfter && dest === destAfter) continue;
-        if (resolveWiki(link.target, sourceAfter, after) === destAfter && baseName(dest) === baseName(destAfter)) continue;
-        const newText = link.target.includes('/') && dest !== destAfter && resolveWiki(stripExt(destAfter), sourceAfter, after) === destAfter
-          ? stripExt(destAfter)
-          : linkTextFor(destAfter, sourceAfter, after);
+        if (resolveWiki(link.target, sourceAfter, after) === destAfter && dest === destAfter)
+          continue;
+        if (
+          resolveWiki(link.target, sourceAfter, after) === destAfter &&
+          baseName(dest) === baseName(destAfter)
+        )
+          continue;
+        const newText =
+          link.target.includes('/') &&
+          dest !== destAfter &&
+          resolveWiki(stripExt(destAfter), sourceAfter, after) === destAfter
+            ? stripExt(destAfter)
+            : linkTextFor(destAfter, sourceAfter, after);
         if (newText !== link.target) {
-          edits.push({ path: note.path, line: link.line, start: link.targetStart, end: link.targetEnd, newText });
+          edits.push({
+            path: note.path,
+            line: link.line,
+            start: link.targetStart,
+            end: link.targetEnd,
+            newText,
+          });
         }
       } else {
         if (resolveMd(link.target, sourceAfter, after) === destAfter) continue;
         const rooted = link.target.startsWith('/');
-        const newText = rooted ? `/${destAfter.split('/').map(encodeURIComponent).join('/')}` : relativeHref(sourceAfter, destAfter);
-        edits.push({ path: note.path, line: link.line, start: link.targetStart, end: link.targetEnd, newText });
+        const newText = rooted
+          ? `/${destAfter.split('/').map(encodeURIComponent).join('/')}`
+          : relativeHref(sourceAfter, destAfter);
+        edits.push({
+          path: note.path,
+          line: link.line,
+          start: link.targetStart,
+          end: link.targetEnd,
+          newText,
+        });
       }
     }
   }
@@ -184,6 +223,7 @@ export function safeNoteName(target: string): string | null {
   const path = normalisePath(stripExt(target.trim()));
   if (!path) return null;
   const segs = path.split('/');
-  if (segs.some((s) => /[<>:"|?*\u0000-\u001f]/.test(s) || /^\.+$/.test(s) || s.length > 120)) return null;
+  if (segs.some((s) => /[<>:"|?*\u0000-\u001f]/.test(s) || /^\.+$/.test(s) || s.length > 120))
+    return null;
   return `${segs.join('/')}.md`;
 }

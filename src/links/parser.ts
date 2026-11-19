@@ -47,7 +47,13 @@ export function maskLines(lines: string[]): string[] {
     const f = /^\s{0,3}(`{3,}|~{3,})/.exec(line);
     if (fence) {
       out.push(blank(line));
-      if (f && f[1][0] === fence[0] && f[1].length >= fence.length && /^\s{0,3}[`~]+\s*$/.test(line)) fence = null;
+      if (
+        f &&
+        f[1][0] === fence[0] &&
+        f[1].length >= fence.length &&
+        /^\s{0,3}[`~]+\s*$/.test(line)
+      )
+        fence = null;
       continue;
     }
     if (f) {
@@ -104,7 +110,9 @@ export function parseNote(text: string): ParsedNote {
       if (taken.some(([a, b]) => start < b && end > a)) continue;
       let href = m[3];
       let hrefStart = start + m[0].indexOf('](') + 2;
-      hrefStart += m[0].slice(m[0].indexOf('](') + 2).length - m[0].slice(m[0].indexOf('](') + 2).trimStart().length;
+      hrefStart +=
+        m[0].slice(m[0].indexOf('](') + 2).length -
+        m[0].slice(m[0].indexOf('](') + 2).trimStart().length;
       if (href.startsWith('<')) {
         href = href.slice(1, -1);
         hrefStart += 1;
@@ -159,7 +167,8 @@ export function findUnlinkedMentions(note: ParsedNote, name: string): Mention[] 
       // Inside the text or URL of any other Markdown link or autolink.
       const before = line.slice(0, start);
       if (/\[[^\]]*$/.test(before) && /^[^\[]*\]\(/.test(line.slice(end))) continue;
-      if (/\]\([^)]*$/.test(before) || /<[^>\s]*$/.test(before) || /https?:\/\/\S*$/.test(before)) continue;
+      if (/\]\([^)]*$/.test(before) || /<[^>\s]*$/.test(before) || /https?:\/\/\S*$/.test(before))
+        continue;
       out.push({ line: lineNo, start, end });
     }
   });

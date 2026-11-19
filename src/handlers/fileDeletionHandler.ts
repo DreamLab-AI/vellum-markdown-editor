@@ -131,7 +131,7 @@ async function promptAndDeleteAssets(assetUris: vscode.Uri[]) {
     const fileName = pathParts[pathParts.length - 1];
 
     // Create a relative path if possible for a nicer display
-    let displayPath = vscode.workspace.asRelativePath(uri);
+    const displayPath = vscode.workspace.asRelativePath(uri);
 
     return {
       label: fileName,

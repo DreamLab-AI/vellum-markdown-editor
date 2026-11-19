@@ -9,10 +9,13 @@ export class NoteManager {
     const templateFolderStr = config.get<string>('templateFolder', '');
 
     if (templateFolderStr) {
-      const choice = await vscode.window.showQuickPick([
-        { label: '$(add) Empty Note', id: 'empty' },
-        { label: '$(layout-template) Note from Template', id: 'template' }
-      ], { placeHolder: 'Select note type' });
+      const choice = await vscode.window.showQuickPick(
+        [
+          { label: '$(add) Empty Note', id: 'empty' },
+          { label: '$(layout-template) Note from Template', id: 'template' },
+        ],
+        { placeHolder: 'Select note type' },
+      );
 
       if (!choice) return;
 
@@ -46,13 +49,15 @@ export class NoteManager {
     }
 
     if (!templateFolderStr) {
-      vscode.window.showErrorMessage('Template folder is not configured. Please set `markdownLive.templateFolder` in settings.');
+      vscode.window.showErrorMessage(
+        'Template folder is not configured. Please set `markdownLive.templateFolder` in settings.',
+      );
       return;
     }
 
     const templateFolderUri = vscode.Uri.joinPath(workspaceFolders[0].uri, templateFolderStr);
     let templates: [string, vscode.FileType][];
-    
+
     try {
       templates = await vscode.workspace.fs.readDirectory(templateFolderUri);
     } catch (error) {
@@ -60,7 +65,9 @@ export class NoteManager {
       return;
     }
 
-    const markdownTemplates = templates.filter(([name, type]) => type === vscode.FileType.File && name.endsWith('.md'));
+    const markdownTemplates = templates.filter(
+      ([name, type]) => type === vscode.FileType.File && name.endsWith('.md'),
+    );
 
     if (markdownTemplates.length === 0) {
       vscode.window.showInformationMessage(`No markdown templates found in ${templateFolderStr}`);
@@ -117,8 +124,8 @@ export class NoteManager {
     // Replace invalid characters for file names
     filename = filename.replace(/[\\/:\*\?"<>\|]/g, '-');
 
-    const targetDirUri = defaultDirStr 
-      ? vscode.Uri.joinPath(workspaceFolders[0].uri, defaultDirStr) 
+    const targetDirUri = defaultDirStr
+      ? vscode.Uri.joinPath(workspaceFolders[0].uri, defaultDirStr)
       : workspaceFolders[0].uri;
 
     // Ensure directory exists

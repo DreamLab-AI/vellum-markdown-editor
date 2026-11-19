@@ -20,7 +20,7 @@ async function initWebview() {
       });
     }
   });
-  
+
   window.addEventListener('unhandledrejection', (event) => {
     console.error('Webview Promise Rejection:', event.reason);
     if (vscode) {
@@ -42,7 +42,7 @@ async function initWebview() {
 
   // Đăng ký toàn bộ event listeners cho UI
   setupUIEvents();
-  
+
   // Inject Slash Menu styles since it's dynamically created
   const style = document.createElement('style');
   style.innerHTML = `

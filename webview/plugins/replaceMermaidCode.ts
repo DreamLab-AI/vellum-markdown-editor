@@ -17,4 +17,3 @@ export function replaceMermaidCode(node: MdNode): void {
     }
   });
 }
-

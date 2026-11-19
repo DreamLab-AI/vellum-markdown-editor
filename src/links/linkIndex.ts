@@ -48,7 +48,8 @@ export class LinkIndex implements vscode.Disposable {
       watcher.onDidCreate((uri) => this.loadFromDisk(uri)),
       watcher.onDidChange((uri) => {
         // An open document is the truth for its file; ignore the disk echo.
-        if (!vscode.workspace.textDocuments.some((d) => d.uri.toString() === uri.toString())) this.loadFromDisk(uri);
+        if (!vscode.workspace.textDocuments.some((d) => d.uri.toString() === uri.toString()))
+          this.loadFromDisk(uri);
       }),
       watcher.onDidDelete((uri) => this.remove(uri)),
       vscode.workspace.onDidChangeTextDocument((e) => {
@@ -155,7 +156,11 @@ export class LinkIndex implements vscode.Disposable {
     if (!root) return undefined;
     const sourcePath = vscode.workspace.asRelativePath(source, false).replace(/\\/g, '/');
     const link = { kind: 'wiki', target } as NoteLink;
-    const path = resolveLink(link, sourcePath, this.inRoot(root).map((e) => e.path));
+    const path = resolveLink(
+      link,
+      sourcePath,
+      this.inRoot(root).map((e) => e.path),
+    );
     return path ? this.uriOf(root, path) : undefined;
   }
 
@@ -174,7 +179,8 @@ export class LinkIndex implements vscode.Disposable {
     const paths = this.inRoot(entry.root).map((e) => e.path);
     const out = new Set<string>();
     for (const link of entry.links) {
-      if (link.kind === 'wiki' && link.target && !resolveLink(link, entry.path, paths)) out.add(link.target);
+      if (link.kind === 'wiki' && link.target && !resolveLink(link, entry.path, paths))
+        out.add(link.target);
     }
     return [...out];
   }
@@ -205,14 +211,19 @@ export class LinkIndex implements vscode.Disposable {
         }
       }
     }
-    return out.sort((a, b) => a.sourcePath.localeCompare(b.sourcePath) || a.link.line - b.link.line);
+    return out.sort(
+      (a, b) => a.sourcePath.localeCompare(b.sourcePath) || a.link.line - b.link.line,
+    );
   }
 
   /**
    * The bounded neighbourhood of `uri` among the notes of its workspace folder,
    * with the URI of every note in it. Undefined when the note is not indexed.
    */
-  public neighbourhood(uri: vscode.Uri, bounds?: GraphBounds): { root: string; graph: NoteGraph; uris: Map<string, vscode.Uri> } | undefined {
+  public neighbourhood(
+    uri: vscode.Uri,
+    bounds?: GraphBounds,
+  ): { root: string; graph: NoteGraph; uris: Map<string, vscode.Uri> } | undefined {
     const centre = this.entryFor(uri);
     if (!centre) return undefined;
     const all = this.inRoot(centre.root);
@@ -246,7 +257,9 @@ export class LinkIndex implements vscode.Disposable {
    * The edit that keeps links working when files or folders are renamed.
    * Returns undefined when nothing needs to change.
    */
-  public renameEdit(files: ReadonlyArray<{ oldUri: vscode.Uri; newUri: vscode.Uri }>): vscode.WorkspaceEdit | undefined {
+  public renameEdit(
+    files: ReadonlyArray<{ oldUri: vscode.Uri; newUri: vscode.Uri }>,
+  ): vscode.WorkspaceEdit | undefined {
     const edit = new vscode.WorkspaceEdit();
     let count = 0;
     const roots = new Set([...this.entries.values()].map((e) => e.root));

@@ -12,7 +12,19 @@ export function escapeHtml(value: unknown): string {
     .replace(/`/g, '&#096;');
 }
 
-const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'avif', 'svg', 'ico', 'tif', 'tiff']);
+const IMAGE_EXTENSIONS = new Set([
+  'png',
+  'jpg',
+  'jpeg',
+  'gif',
+  'webp',
+  'bmp',
+  'avif',
+  'svg',
+  'ico',
+  'tif',
+  'tiff',
+]);
 
 /**
  * The file extension for a pasted or dropped image. The value arrives from

@@ -42,7 +42,13 @@ export function currentSelectionInfo(): SelectionInfo {
         const fp = fingerprint(full[at.line - frontmatterLines - 1] ?? '');
         return fp.startsWith(at.fp) ? fp : at.fp;
       };
-      info = { text, startLine: start.line, endLine: Math.max(start.line, end.line), fpStart: whole(start), fpEnd: whole(end) };
+      info = {
+        text,
+        startLine: start.line,
+        endLine: Math.max(start.line, end.line),
+        fpStart: whole(start),
+        fpEnd: whole(end),
+      };
     } catch {
       // A selection that cannot be serialised still sends its text.
     }

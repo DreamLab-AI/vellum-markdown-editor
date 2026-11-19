@@ -68,14 +68,22 @@ const insertDiagramInputRule = $inputRule(
     new InputRule(/^```mermaid$/, (state, _match, start, end) => {
       const nodeType = diagramSchema.type(ctx);
       const $start = state.doc.resolve(start);
-      if (!$start.node(-1).canReplaceWith($start.index(-1), $start.indexAfter(-1), nodeType)) return null;
-      return state.tr.delete(start, end).setBlockType(start, start, nodeType, { identity: newId() });
-    })
+      if (!$start.node(-1).canReplaceWith($start.index(-1), $start.indexAfter(-1), nodeType))
+        return null;
+      return state.tr
+        .delete(start, end)
+        .setBlockType(start, start, nodeType, { identity: newId() });
+    }),
 );
 
 export const insertDiagramCommand = $command(
   'InsertDiagramCommand',
-  (ctx) => () => setBlockType(diagramSchema.type(ctx), { identity: newId() })
+  (ctx) => () => setBlockType(diagramSchema.type(ctx), { identity: newId() }),
 );
 
-export const diagram = [remarkDiagram, diagramSchema, insertDiagramCommand, insertDiagramInputRule].flat();
+export const diagram = [
+  remarkDiagram,
+  diagramSchema,
+  insertDiagramCommand,
+  insertDiagramInputRule,
+].flat();

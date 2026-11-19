@@ -25,7 +25,7 @@ export const htmlView = $view(htmlSchema.node, () => (node, view, getPos) => {
     ignoreMutation: () => {
       // Prevent ProseMirror from undoing the 'open' attribute added to <details> by the browser
       return true;
-    }
+    },
   };
 });
 
@@ -56,7 +56,8 @@ export const mermaidView = $view(diagramSchema.node, () => (node, view, getPos) 
 
   let isEditing = false;
 
-  for (const [name, value] of Object.entries(PELE_THEME_VARS)) container.style.setProperty(name, value);
+  for (const [name, value] of Object.entries(PELE_THEME_VARS))
+    container.style.setProperty(name, value);
 
   const showMessage = (text: string, colourVar: string, italic = false) => {
     const el = document.createElement(italic ? 'em' : 'div');

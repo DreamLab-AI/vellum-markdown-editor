@@ -21,7 +21,8 @@ function nearest(lines: readonly string[], estimate: number, fp: string, from = 
   const clamp = (n: number) => Math.min(Math.max(n, from), Math.max(lines.length, from));
   const est = clamp(estimate);
   if (!fp) return est;
-  const hit = (n: number) => n >= from && n <= lines.length && fingerprint(lines[n - 1]).startsWith(fp);
+  const hit = (n: number) =>
+    n >= from && n <= lines.length && fingerprint(lines[n - 1]).startsWith(fp);
   for (let d = 0; d <= lines.length; d++) {
     if (hit(est - d)) return est - d;
     if (hit(est + d)) return est + d;
@@ -36,7 +37,10 @@ function nearest(lines: readonly string[], estimate: number, fp: string, from = 
  * with the reported one. Returns 1-based, inclusive lines, or undefined when
  * the selection carried no position.
  */
-export function locateLines(source: string, info: SelectionInfo): { start: number; end: number } | undefined {
+export function locateLines(
+  source: string,
+  info: SelectionInfo,
+): { start: number; end: number } | undefined {
   if (!Number.isInteger(info.startLine) || !Number.isInteger(info.endLine)) return undefined;
   const lines = source.split(/\r?\n/);
   const start = nearest(lines, info.startLine as number, info.fpStart ?? '');
@@ -69,7 +73,9 @@ export interface LinkContextInput {
 export function buildLinkContext(input: LinkContextInput, limit = 40): string {
   const uniq = <T>(xs: readonly T[]) => [...new Set(xs)];
   const out = [`Note: ${formatReference(input.note)}`];
-  const back = uniq(input.backlinks.map((b) => formatReference(b.path, { start: b.line, end: b.line })));
+  const back = uniq(
+    input.backlinks.map((b) => formatReference(b.path, { start: b.line, end: b.line })),
+  );
   if (back.length) {
     out.push('', `Linked from (${back.length}):`, ...back.slice(0, limit).map((r) => `- ${r}`));
     if (back.length > limit) out.push(`- … and ${back.length - limit} more`);
@@ -80,7 +86,14 @@ export function buildLinkContext(input: LinkContextInput, limit = 40): string {
     if (fwd.length > limit) out.push(`- … and ${fwd.length - limit} more`);
   }
   const missing = uniq(input.unresolved);
-  if (missing.length) out.push('', `Links to notes that do not exist yet: ${missing.slice(0, limit).map((t) => `[[${t}]]`).join(', ')}`);
+  if (missing.length)
+    out.push(
+      '',
+      `Links to notes that do not exist yet: ${missing
+        .slice(0, limit)
+        .map((t) => `[[${t}]]`)
+        .join(', ')}`,
+    );
   return out.join('\n');
 }
 
@@ -93,8 +106,18 @@ export const CLAUDE_EXTENSION_ID = 'anthropic.claude-code';
  * so parsing the finished string instead would strip this encoding and a
  * prompt containing `&`, `+` or `%` would be split or garbled.
  */
-export function claudeOpenParts(prompt: string): { scheme: string; authority: string; path: string; query: string } {
-  return { scheme: 'vscode', authority: CLAUDE_EXTENSION_ID, path: '/open', query: `prompt=${encodeURIComponent(prompt)}` };
+export function claudeOpenParts(prompt: string): {
+  scheme: string;
+  authority: string;
+  path: string;
+  query: string;
+} {
+  return {
+    scheme: 'vscode',
+    authority: CLAUDE_EXTENSION_ID,
+    path: '/open',
+    query: `prompt=${encodeURIComponent(prompt)}`,
+  };
 }
 
 /** The same link as text, as Claude Code documents it (for display and tests). */
@@ -114,15 +137,28 @@ export function escapeWikilinkPipesInTables(markdown: string): string {
   if (!markdown.includes('[[')) return markdown;
   return markdown
     .split('\n')
-    .map((line) => (/^\s*\|/.test(line) ? line.replace(/\[\[[^\[\]\n]*\]\]/g, (link) => link.replace(/(?<!\\)\|/g, '\\|')) : line))
+    .map((line) =>
+      /^\s*\|/.test(line)
+        ? line.replace(/\[\[[^\[\]\n]*\]\]/g, (link) => link.replace(/(?<!\\)\|/g, '\\|'))
+        : line,
+    )
     .join('\n');
 }
 
 export type AiTarget = 'claude' | 'antigravity' | 'chat' | 'clipboard';
 
 /** Which assistant "Send to AI" should use. */
-export function chooseTarget(setting: string | undefined, has: { claude: boolean; antigravity: boolean }): AiTarget {
-  if (setting === 'claude' || setting === 'antigravity' || setting === 'chat' || setting === 'clipboard') return setting;
+export function chooseTarget(
+  setting: string | undefined,
+  has: { claude: boolean; antigravity: boolean },
+): AiTarget {
+  if (
+    setting === 'claude' ||
+    setting === 'antigravity' ||
+    setting === 'chat' ||
+    setting === 'clipboard'
+  )
+    return setting;
   if (has.claude) return 'claude';
   if (has.antigravity) return 'antigravity';
   return 'chat';
@@ -133,7 +169,10 @@ export function chooseTarget(setting: string | undefined, has: { claude: boolean
  * fingerprint of that (possibly cut-off) last line. Used by the webview: it
  * serialises the document up to each end of the selection.
  */
-export function endOfPrefix(markdownPrefix: string, frontmatterLines = 0): { line: number; fp: string } {
+export function endOfPrefix(
+  markdownPrefix: string,
+  frontmatterLines = 0,
+): { line: number; fp: string } {
   const lines = markdownPrefix.replace(/\s+$/, '').split('\n');
   return { line: lines.length + frontmatterLines, fp: fingerprint(lines[lines.length - 1] ?? '') };
 }

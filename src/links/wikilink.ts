@@ -18,7 +18,13 @@ export function parseWikilinkInner(inner: string, embed = false): WikilinkParts 
   // In a table cell the pipe is written `\|`.
   const bar = inner.search(/\\?\|/);
   const left = bar === -1 ? inner : inner.slice(0, bar);
-  const alias = bar === -1 ? '' : inner.slice(bar).replace(/^\\?\|/, '').trim();
+  const alias =
+    bar === -1
+      ? ''
+      : inner
+          .slice(bar)
+          .replace(/^\\?\|/, '')
+          .trim();
   const hash = left.indexOf('#');
   return {
     target: (hash === -1 ? left : left.slice(0, hash)).trim(),

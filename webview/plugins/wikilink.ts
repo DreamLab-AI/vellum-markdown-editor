@@ -3,7 +3,12 @@
 // as a link that opens, or creates, the note.
 import { InputRule } from '@milkdown/prose/inputrules';
 import { $inputRule, $nodeSchema, $remark, $view } from '@milkdown/utils';
-import { formatWikilink, splitWikilinks, wikilinkLabel, WikilinkParts } from '../../src/links/wikilink';
+import {
+  formatWikilink,
+  splitWikilinks,
+  wikilinkLabel,
+  WikilinkParts,
+} from '../../src/links/wikilink';
 import { MdNode, splitTextNodes } from './splitTextNodes';
 
 const id = 'wikilink';
@@ -48,7 +53,14 @@ export const wikilinkSchema = $nodeSchema(id, () => ({
     const p = attrsOf(node);
     return [
       'a',
-      { 'data-type': id, 'data-target': p.target, 'data-heading': p.heading, 'data-alias': p.alias, 'data-embed': String(p.embed), class: 'wikilink' },
+      {
+        'data-type': id,
+        'data-target': p.target,
+        'data-heading': p.heading,
+        'data-alias': p.alias,
+        'data-embed': String(p.embed),
+        class: 'wikilink',
+      },
       wikilinkLabel(p),
     ];
   },
@@ -77,7 +89,9 @@ let unresolved = new Set<string>();
 const UPDATE = 'vellum-link-state';
 
 export function setUnresolvedTargets(targets: unknown): void {
-  unresolved = new Set(Array.isArray(targets) ? targets.filter((t): t is string => typeof t === 'string') : []);
+  unresolved = new Set(
+    Array.isArray(targets) ? targets.filter((t): t is string => typeof t === 'string') : [],
+  );
   window.dispatchEvent(new Event(UPDATE));
 }
 

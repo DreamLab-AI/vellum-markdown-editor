@@ -7,7 +7,7 @@ import type { LinkIndex } from './links/linkIndex';
 export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
   public static currentPanel: vscode.WebviewPanel | undefined;
   public static currentDocument: vscode.TextDocument | undefined;
-  public static openPanels: { panel: vscode.WebviewPanel, document: vscode.TextDocument }[] = [];
+  public static openPanels: { panel: vscode.WebviewPanel; document: vscode.TextDocument }[] = [];
   public static linkIndex: LinkIndex | undefined;
 
   /** Tell each open editor which of its wikilinks point at no note. */
@@ -16,7 +16,10 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
     if (!index) return;
     for (const { panel, document } of MarkdownLiveProvider.openPanels) {
       if (only && panel !== only) continue;
-      void panel.webview.postMessage({ type: 'linkState', unresolved: index.unresolvedTargets(document.uri) });
+      void panel.webview.postMessage({
+        type: 'linkState',
+        unresolved: index.unresolvedTargets(document.uri),
+      });
     }
   }
 
@@ -36,7 +39,7 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
       MarkdownLiveProvider.currentPanel.webview.postMessage({ type: 'insertText', text });
     } else if (vscode.window.activeTextEditor) {
       const editor = vscode.window.activeTextEditor;
-      editor.edit(editBuilder => {
+      editor.edit((editBuilder) => {
         editBuilder.insert(editor.selection.active, text);
       });
     } else {
@@ -54,13 +57,15 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
       },
     );
 
-    context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
-      if (e.affectsConfiguration('markdownLive')) {
-        for (const { panel, document } of MarkdownLiveProvider.openPanels) {
-          panel.webview.html = getHtmlForWebview(panel.webview, document, context);
+    context.subscriptions.push(
+      vscode.workspace.onDidChangeConfiguration((e) => {
+        if (e.affectsConfiguration('markdownLive')) {
+          for (const { panel, document } of MarkdownLiveProvider.openPanels) {
+            panel.webview.html = getHtmlForWebview(panel.webview, document, context);
+          }
         }
-      }
-    }));
+      }),
+    );
 
     return providerRegistration;
   }
@@ -77,7 +82,6 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken,
   ): Promise<void> {
-
     // Hack: VS Code Custom Editors do not support split diff views natively.
     // If we detect this document is opened inside a Diff Editor, we render a fallback UI.
     let isDiffEditor = document.uri.scheme === 'git';
@@ -86,8 +90,10 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
       for (const group of vscode.window.tabGroups.all) {
         for (const tab of group.tabs) {
           if (tab.input instanceof vscode.TabInputTextDiff) {
-            if (tab.input.original.toString() === document.uri.toString() || 
-                tab.input.modified.toString() === document.uri.toString()) {
+            if (
+              tab.input.original.toString() === document.uri.toString() ||
+              tab.input.modified.toString() === document.uri.toString()
+            ) {
               isDiffEditor = true;
               diffTab = tab;
               break;
@@ -100,13 +106,18 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
 
     const config = vscode.workspace.getConfiguration('markdownLive');
     const lang = config.get<string>('language', 'en');
-    
+
     if (isDiffEditor) {
-      const title = lang === 'vi' ? 'Live Editor không hỗ trợ xem Git Diff' : 'Live Editor does not support Git Diff view';
-      const desc = lang === 'vi' 
-        ? 'Giao diện xem Diff chia đôi màn hình hiện chỉ khả dụng ở trình soạn thảo mặc định của VS Code.'
-        : 'The split-screen Diff view is currently only available in the default VS Code text editor.';
-      const btn = lang === 'vi' ? 'Chuyển sang Standard Text Editor' : 'Switch to Standard Text Editor';
+      const title =
+        lang === 'vi'
+          ? 'Live Editor không hỗ trợ xem Git Diff'
+          : 'Live Editor does not support Git Diff view';
+      const desc =
+        lang === 'vi'
+          ? 'Giao diện xem Diff chia đôi màn hình hiện chỉ khả dụng ở trình soạn thảo mặc định của VS Code.'
+          : 'The split-screen Diff view is currently only available in the default VS Code text editor.';
+      const btn =
+        lang === 'vi' ? 'Chuyển sang Standard Text Editor' : 'Switch to Standard Text Editor';
 
       const nonce = newNonce();
       webviewPanel.webview.options = { enableScripts: true };
@@ -142,10 +153,12 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
             const original = diffTab.input.original;
             const modified = diffTab.input.modified;
             const label = diffTab.label;
-            
+
             await vscode.window.tabGroups.close(diffTab);
             setTimeout(() => {
-              vscode.commands.executeCommand('vscode.diff', original, modified, label, { override: 'default' });
+              vscode.commands.executeCommand('vscode.diff', original, modified, label, {
+                override: 'default',
+              });
             }, 100);
           } else {
             vscode.commands.executeCommand('vscode.openWith', document.uri, 'default');
@@ -206,7 +219,9 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
 
     webviewPanel.onDidDispose(() => {
       changeDocumentSubscription.dispose();
-      MarkdownLiveProvider.openPanels = MarkdownLiveProvider.openPanels.filter(p => p.panel !== webviewPanel);
+      MarkdownLiveProvider.openPanels = MarkdownLiveProvider.openPanels.filter(
+        (p) => p.panel !== webviewPanel,
+      );
       if (MarkdownLiveProvider.currentPanel === webviewPanel) {
         MarkdownLiveProvider.currentPanel = undefined;
         MarkdownLiveProvider.currentDocument = undefined;
@@ -237,6 +252,4 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
     edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), cleanedText);
     await vscode.workspace.applyEdit(edit);
   }
-
-
 }

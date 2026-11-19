@@ -1,11 +1,5 @@
 import { escapeWikilinkPipesInTables } from '../../src/ai/reference';
-import {
-  Editor,
-  rootCtx,
-  defaultValueCtx,
-  editorViewCtx,
-  prosePluginsCtx,
-} from '@milkdown/core';
+import { Editor, rootCtx, defaultValueCtx, editorViewCtx, prosePluginsCtx } from '@milkdown/core';
 import { commonmark } from '@milkdown/preset-commonmark';
 import { gfm } from '@milkdown/preset-gfm';
 import { nord } from '@milkdown/theme-nord';
@@ -50,7 +44,11 @@ export async function initMilkdown(initialText: string) {
         // The listener is debounced, so it also fires after an update from the
         // host has settled. That is not an edit: sending it back would rewrite
         // the file in the serialiser's formatting and mark it dirty.
-        if (!state.editedSinceExternal && state.externalSerialised !== null && markdown === state.externalSerialised) {
+        if (
+          !state.editedSinceExternal &&
+          state.externalSerialised !== null &&
+          markdown === state.externalSerialised
+        ) {
           updateOutline(markdown);
           return;
         }
@@ -63,7 +61,7 @@ export async function initMilkdown(initialText: string) {
             state.currentFrontmatter = match[0];
             updateMetadataUI(match[1]);
             markdownToRender = markdown.slice(match[0].length);
-            
+
             // Remove frontmatter from Milkdown if it was just typed/inserted
             setTimeout(() => {
               if (state.editor) {
@@ -122,7 +120,7 @@ export async function initMilkdown(initialText: string) {
           if (!contentStr) return false;
           // Show slash menu if text ends with / followed by any non-space characters
           return /\/[^\s/]*$/.test(contentStr);
-        }
+        },
       });
 
       provider.onShow = () => {
@@ -143,7 +141,7 @@ export async function initMilkdown(initialText: string) {
           const editorView = ctx.get(editorViewCtx);
           const { state: pmState, dispatch } = editorView;
           const { tr, selection } = pmState;
-          
+
           const contentStr = provider.getContent(editorView);
           if (contentStr) {
             const match = contentStr.match(/(\/[^\s/]*)$/);
@@ -155,26 +153,48 @@ export async function initMilkdown(initialText: string) {
           } else {
             dispatch(tr.delete(selection.from - 1, selection.from));
           }
-          
+
           provider.hide();
 
           switch (action) {
-            case 'h1': callCommand(wrapInHeadingCommand.key, 1)(ctx); break;
-            case 'h2': callCommand(wrapInHeadingCommand.key, 2)(ctx); break;
-            case 'h3': callCommand(wrapInHeadingCommand.key, 3)(ctx); break;
-            case 'ul': callCommand(wrapInBulletListCommand.key)(ctx); break;
-            case 'ol': callCommand(wrapInOrderedListCommand.key)(ctx); break;
+            case 'h1':
+              callCommand(wrapInHeadingCommand.key, 1)(ctx);
+              break;
+            case 'h2':
+              callCommand(wrapInHeadingCommand.key, 2)(ctx);
+              break;
+            case 'h3':
+              callCommand(wrapInHeadingCommand.key, 3)(ctx);
+              break;
+            case 'ul':
+              callCommand(wrapInBulletListCommand.key)(ctx);
+              break;
+            case 'ol':
+              callCommand(wrapInOrderedListCommand.key)(ctx);
+              break;
             case 'task':
               insert('\n- [ ] ')(ctx);
               break;
-            case 'quote': callCommand(wrapInBlockquoteCommand.key)(ctx); break;
-            case 'code': callCommand(createCodeBlockCommand.key)(ctx); break;
-            case 'table':
-              insert('\n| Column 1 | Column 2 |\n| -------- | -------- |\n| Text     | Text     |\n')(ctx);
+            case 'quote':
+              callCommand(wrapInBlockquoteCommand.key)(ctx);
               break;
-            case 'image': insert('\n![image]()\n')(ctx); break;
-            case 'yaml': insert('---\ntitle: Untitled\n---\n\n')(ctx); break;
-            case 'footnote': insertFootnote(ctx); break;
+            case 'code':
+              callCommand(createCodeBlockCommand.key)(ctx);
+              break;
+            case 'table':
+              insert(
+                '\n| Column 1 | Column 2 |\n| -------- | -------- |\n| Text     | Text     |\n',
+              )(ctx);
+              break;
+            case 'image':
+              insert('\n![image]()\n')(ctx);
+              break;
+            case 'yaml':
+              insert('---\ntitle: Untitled\n---\n\n')(ctx);
+              break;
+            case 'footnote':
+              insertFootnote(ctx);
+              break;
           }
         }
       });
@@ -185,7 +205,7 @@ export async function initMilkdown(initialText: string) {
           return {
             update: (updatedView: any, prevState: any) => {
               provider.update(updatedView, prevState);
-              
+
               const contentStr = provider.getContent(updatedView);
               if (contentStr) {
                 const match = contentStr.match(/\/([^\s/]*)$/);
@@ -213,7 +233,7 @@ export async function initMilkdown(initialText: string) {
               content.remove();
             },
           };
-        }
+        },
       });
 
       const taskListPlugin = new Plugin({
@@ -222,28 +242,37 @@ export async function initMilkdown(initialText: string) {
           handleDOMEvents: {
             mousedown: (view, event) => {
               const target = event.target as HTMLElement;
-              if (target && target.tagName === 'LI' && target.getAttribute('data-item-type') === 'task') {
-                 const rect = target.getBoundingClientRect();
-                 // Check if click was in the pseudo-element checkbox area (left side of LI)
-                 if (event.clientX >= rect.left - 30 && event.clientX <= rect.left) {
-                    const pos = view.posAtDOM(target, 0);
-                    const $pos = view.state.doc.resolve(pos);
-                    for (let d = $pos.depth; d > 0; d--) {
-                       if ($pos.node(d).type.name === 'list_item') {
-                           const listItemPos = $pos.before(d);
-                           const listItem = $pos.node(d);
-                           const checked = listItem.attrs.checked;
-                           view.dispatch(view.state.tr.setNodeMarkup(listItemPos, undefined, { ...listItem.attrs, checked: !checked }));
-                           event.preventDefault();
-                           return true;
-                       }
+              if (
+                target &&
+                target.tagName === 'LI' &&
+                target.getAttribute('data-item-type') === 'task'
+              ) {
+                const rect = target.getBoundingClientRect();
+                // Check if click was in the pseudo-element checkbox area (left side of LI)
+                if (event.clientX >= rect.left - 30 && event.clientX <= rect.left) {
+                  const pos = view.posAtDOM(target, 0);
+                  const $pos = view.state.doc.resolve(pos);
+                  for (let d = $pos.depth; d > 0; d--) {
+                    if ($pos.node(d).type.name === 'list_item') {
+                      const listItemPos = $pos.before(d);
+                      const listItem = $pos.node(d);
+                      const checked = listItem.attrs.checked;
+                      view.dispatch(
+                        view.state.tr.setNodeMarkup(listItemPos, undefined, {
+                          ...listItem.attrs,
+                          checked: !checked,
+                        }),
+                      );
+                      event.preventDefault();
+                      return true;
                     }
-                 }
+                  }
+                }
               }
               return false;
-            }
-          }
-        }
+            },
+          },
+        },
       });
 
       const wikilinkPlugin = new Plugin({
@@ -258,11 +287,20 @@ export async function initMilkdown(initialText: string) {
               }
             }
             return false;
-          }
-        }
+          },
+        },
       });
 
-      ctx.update(prosePluginsCtx, (prev) => [...prev, admonitionPlugin, hashtagPlugin, slashPlugin, taskListPlugin, wikilinkPlugin, imagePastePlugin, searchPlugin]);
+      ctx.update(prosePluginsCtx, (prev) => [
+        ...prev,
+        admonitionPlugin,
+        hashtagPlugin,
+        slashPlugin,
+        taskListPlugin,
+        wikilinkPlugin,
+        imagePastePlugin,
+        searchPlugin,
+      ]);
     })
     .config(nord)
     .use(commonmark)

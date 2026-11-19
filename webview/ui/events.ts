@@ -7,7 +7,11 @@ import {
   toggleEmphasisCommand,
   wrapInBlockquoteCommand,
 } from '@milkdown/preset-commonmark';
-import { addRowAfterCommand, addColAfterCommand, toggleStrikethroughCommand } from '@milkdown/preset-gfm';
+import {
+  addRowAfterCommand,
+  addColAfterCommand,
+  toggleStrikethroughCommand,
+} from '@milkdown/preset-gfm';
 import { deleteRow, deleteColumn, deleteTable } from '@milkdown/prose/tables';
 import { editorViewCtx } from '@milkdown/core';
 import { state, vscode } from '../state';
@@ -20,7 +24,7 @@ let targetImage: HTMLImageElement | null = null;
 export function setupUIEvents() {
   // Intercept programmatic window.open calls (e.g. from Milkdown tooltip plugins)
   const originalOpen = window.open;
-  window.open = function(url?: string | URL, target?: string, features?: string): Window | null {
+  window.open = function (url?: string | URL, target?: string, features?: string): Window | null {
     if (url) {
       const urlStr = url.toString();
       if (vscode) {
@@ -61,7 +65,9 @@ function setupImageObserver() {
                   : '';
                 img.setAttribute('data-raw-src', originalSrc);
                 if (state.workspaceRoot) {
-                  const root = state.workspaceRoot.endsWith('/') ? state.workspaceRoot.slice(0, -1) : state.workspaceRoot;
+                  const root = state.workspaceRoot.endsWith('/')
+                    ? state.workspaceRoot.slice(0, -1)
+                    : state.workspaceRoot;
                   const path = (prefix + originalSrc).replace(/\/\//g, '/');
                   img.src = root + path;
                 } else {
@@ -77,7 +83,11 @@ function setupImageObserver() {
         const img = mutation.target as HTMLImageElement;
         const originalSrc = img.getAttribute('src');
         if (originalSrc && originalSrc.startsWith('/')) {
-          if (originalSrc.startsWith('vscode-webview:') || originalSrc.startsWith('https://file+.vscode-resource')) return;
+          if (
+            originalSrc.startsWith('vscode-webview:') ||
+            originalSrc.startsWith('https://file+.vscode-resource')
+          )
+            return;
           const prefix = state.publicPathPrefix
             ? state.publicPathPrefix.startsWith('/')
               ? state.publicPathPrefix
@@ -89,7 +99,9 @@ function setupImageObserver() {
           ) {
             img.setAttribute('data-raw-src', originalSrc);
             if (state.workspaceRoot) {
-              const root = state.workspaceRoot.endsWith('/') ? state.workspaceRoot.slice(0, -1) : state.workspaceRoot;
+              const root = state.workspaceRoot.endsWith('/')
+                ? state.workspaceRoot.slice(0, -1)
+                : state.workspaceRoot;
               const path = (prefix + originalSrc).replace(/\/\//g, '/');
               img.src = root + path;
             } else {
@@ -123,14 +135,20 @@ function setupImageObserver() {
 
   const linkInterceptor = (e: Event) => {
     const path = e.composedPath();
-    const link = path.find((node) => node instanceof HTMLElement && node.tagName === 'A') as HTMLAnchorElement;
+    const link = path.find(
+      (node) => node instanceof HTMLElement && node.tagName === 'A',
+    ) as HTMLAnchorElement;
     if (link) {
       e.preventDefault();
       e.stopPropagation();
       if (e.type === 'click' && vscode && link.dataset.type === 'wikilink') {
         // A wikilink opens its note, creating it first if it does not exist.
         if (link.dataset.target) {
-          vscode.postMessage({ type: 'openWikilink', target: link.dataset.target, heading: link.dataset.heading || '' });
+          vscode.postMessage({
+            type: 'openWikilink',
+            target: link.dataset.target,
+            heading: link.dataset.heading || '',
+          });
         }
       } else if (e.type === 'click' && vscode) {
         const hrefAttr = link.getAttribute('href');
@@ -176,7 +194,7 @@ function setupToolbarEvents() {
         const { state: pmState, dispatch } = view;
         const { $from, $to } = pmState.selection;
         const range = $from.blockRange($to);
-        
+
         let listNodePos = -1;
         let listNode = null;
         if (range) {
@@ -189,7 +207,7 @@ function setupToolbarEvents() {
             }
           }
         }
-        
+
         if (listNode && listNode.type.name === 'ordered_list') {
           dispatch(pmState.tr.setNodeMarkup(listNodePos, pmState.schema.nodes.bullet_list));
         } else {
@@ -206,7 +224,7 @@ function setupToolbarEvents() {
         const { state: pmState, dispatch } = view;
         const { $from, $to } = pmState.selection;
         const range = $from.blockRange($to);
-        
+
         let listNodePos = -1;
         let listNode = null;
         if (range) {
@@ -219,7 +237,7 @@ function setupToolbarEvents() {
             }
           }
         }
-        
+
         if (listNode && listNode.type.name === 'bullet_list') {
           dispatch(pmState.tr.setNodeMarkup(listNodePos, pmState.schema.nodes.ordered_list));
         } else {
@@ -236,7 +254,7 @@ function setupToolbarEvents() {
         const { state: pmState, dispatch } = view;
         const { $from, $to } = pmState.selection;
         const range = $from.blockRange($to);
-        
+
         let listNodePos = -1;
         let listNode = null;
         if (range) {
@@ -249,11 +267,16 @@ function setupToolbarEvents() {
             }
           }
         }
-        
+
         if (listNode) {
           const checked = listNode.attrs.checked;
-          const newChecked = checked == null ? false : (checked === false ? true : null);
-          dispatch(pmState.tr.setNodeMarkup(listNodePos, undefined, { ...listNode.attrs, checked: newChecked }));
+          const newChecked = checked == null ? false : checked === false ? true : null;
+          dispatch(
+            pmState.tr.setNodeMarkup(listNodePos, undefined, {
+              ...listNode.attrs,
+              checked: newChecked,
+            }),
+          );
         } else {
           insert('\n- [ ] Task')(ctx);
         }
@@ -274,11 +297,13 @@ function setupToolbarEvents() {
   });
 
   document.getElementById('btn-search')?.addEventListener('click', () => {
-    document.dispatchEvent(new KeyboardEvent('keydown', {
-      key: 'f',
-      ctrlKey: true,
-      metaKey: true
-    }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'f',
+        ctrlKey: true,
+        metaKey: true,
+      }),
+    );
   });
 
   document.getElementById('btn-zoom-in')?.addEventListener('click', () => {
@@ -302,7 +327,8 @@ function setupToolbarEvents() {
       editorDiv.style.display = 'none';
       sourceDiv.style.display = 'block';
 
-      const fullText = (state.currentFrontmatter ? state.currentFrontmatter : '') + state.lastMarkdown;
+      const fullText =
+        (state.currentFrontmatter ? state.currentFrontmatter : '') + state.lastMarkdown;
       if (!state.cmView) {
         initCodeMirror(fullText);
       } else {
@@ -318,7 +344,7 @@ function setupToolbarEvents() {
       sourceDiv.style.display = 'none';
       editorDiv.style.display = 'flex';
     }
-    
+
     if (vscode) {
       vscode.postMessage({ type: 'toggleEditor' });
     }
@@ -354,24 +380,30 @@ function setupToolbarEvents() {
       if (!editorDiv) return;
       const html = editorDiv.innerHTML;
       const text = editorDiv.innerText;
-      
+
       const blobHtml = new Blob([html], { type: 'text/html' });
       const blobText = new Blob([text], { type: 'text/plain' });
       const item = new ClipboardItem({
         'text/html': blobHtml,
-        'text/plain': blobText
+        'text/plain': blobText,
       });
       await navigator.clipboard.write([item]);
-      
+
       const btn = document.getElementById('btn-copy');
       if (btn) {
         const origColor = btn.style.color;
         btn.style.color = 'var(--vscode-testing-iconPassed)';
-        setTimeout(() => { btn.style.color = origColor; }, 1000);
+        setTimeout(() => {
+          btn.style.color = origColor;
+        }, 1000);
       }
-    } catch(err: any) {
+    } catch (err: any) {
       console.error(err);
-      if (vscode) vscode.postMessage({ type: 'logError', message: 'Failed to copy rich text: ' + err.message });
+      if (vscode)
+        vscode.postMessage({
+          type: 'logError',
+          message: 'Failed to copy rich text: ' + err.message,
+        });
     }
   });
 }
@@ -433,19 +465,31 @@ function setupContextMenuEvents() {
 
   document.getElementById('ctx-img-rename')?.addEventListener('click', () => {
     if (targetImage && vscode) {
-      let rawSrc = targetImage.getAttribute('data-raw-src') || targetImage.getAttribute('src') || '';
-      
+      let rawSrc =
+        targetImage.getAttribute('data-raw-src') || targetImage.getAttribute('src') || '';
+
       // Fallback if data-raw-src was lost and src contains vscode internal uri
-      if (rawSrc.startsWith('vscode-webview:') || rawSrc.startsWith('https://file+.vscode-resource')) {
-        const root = state.workspaceRoot ? (state.workspaceRoot.endsWith('/') ? state.workspaceRoot.slice(0, -1) : state.workspaceRoot) : '';
+      if (
+        rawSrc.startsWith('vscode-webview:') ||
+        rawSrc.startsWith('https://file+.vscode-resource')
+      ) {
+        const root = state.workspaceRoot
+          ? state.workspaceRoot.endsWith('/')
+            ? state.workspaceRoot.slice(0, -1)
+            : state.workspaceRoot
+          : '';
         if (root && rawSrc.includes(root)) {
-           rawSrc = rawSrc.substring(rawSrc.indexOf(root) + root.length);
-           // Remove publicPathPrefix if it was added
-           const prefix = state.publicPathPrefix ? (state.publicPathPrefix.startsWith('/') ? state.publicPathPrefix : '/' + state.publicPathPrefix) : '';
-           if (prefix && rawSrc.startsWith(prefix)) {
-             rawSrc = rawSrc.substring(prefix.length);
-             if (!rawSrc.startsWith('/')) rawSrc = '/' + rawSrc;
-           }
+          rawSrc = rawSrc.substring(rawSrc.indexOf(root) + root.length);
+          // Remove publicPathPrefix if it was added
+          const prefix = state.publicPathPrefix
+            ? state.publicPathPrefix.startsWith('/')
+              ? state.publicPathPrefix
+              : '/' + state.publicPathPrefix
+            : '';
+          if (prefix && rawSrc.startsWith(prefix)) {
+            rawSrc = rawSrc.substring(prefix.length);
+            if (!rawSrc.startsWith('/')) rawSrc = '/' + rawSrc;
+          }
         }
       }
 
@@ -459,17 +503,29 @@ function setupContextMenuEvents() {
 
   document.getElementById('ctx-img-reveal')?.addEventListener('click', () => {
     if (targetImage && vscode) {
-      let rawSrc = targetImage.getAttribute('data-raw-src') || targetImage.getAttribute('src') || '';
-      
-      if (rawSrc.startsWith('vscode-webview:') || rawSrc.startsWith('https://file+.vscode-resource')) {
-        const root = state.workspaceRoot ? (state.workspaceRoot.endsWith('/') ? state.workspaceRoot.slice(0, -1) : state.workspaceRoot) : '';
+      let rawSrc =
+        targetImage.getAttribute('data-raw-src') || targetImage.getAttribute('src') || '';
+
+      if (
+        rawSrc.startsWith('vscode-webview:') ||
+        rawSrc.startsWith('https://file+.vscode-resource')
+      ) {
+        const root = state.workspaceRoot
+          ? state.workspaceRoot.endsWith('/')
+            ? state.workspaceRoot.slice(0, -1)
+            : state.workspaceRoot
+          : '';
         if (root && rawSrc.includes(root)) {
-           rawSrc = rawSrc.substring(rawSrc.indexOf(root) + root.length);
-           const prefix = state.publicPathPrefix ? (state.publicPathPrefix.startsWith('/') ? state.publicPathPrefix : '/' + state.publicPathPrefix) : '';
-           if (prefix && rawSrc.startsWith(prefix)) {
-             rawSrc = rawSrc.substring(prefix.length);
-             if (!rawSrc.startsWith('/')) rawSrc = '/' + rawSrc;
-           }
+          rawSrc = rawSrc.substring(rawSrc.indexOf(root) + root.length);
+          const prefix = state.publicPathPrefix
+            ? state.publicPathPrefix.startsWith('/')
+              ? state.publicPathPrefix
+              : '/' + state.publicPathPrefix
+            : '';
+          if (prefix && rawSrc.startsWith(prefix)) {
+            rawSrc = rawSrc.substring(prefix.length);
+            if (!rawSrc.startsWith('/')) rawSrc = '/' + rawSrc;
+          }
         }
       }
 
@@ -552,203 +608,203 @@ function setupTableModalEvents() {
 }
 
 function setupFindWidgetEvents() {
-    const findWidget = document.getElementById('find-widget');
-    const findInput = document.getElementById('find-input') as HTMLInputElement;
-    const replaceRow = document.getElementById('replace-row');
-    const replaceInput = document.getElementById('replace-input') as HTMLInputElement;
-    const countSpan = document.getElementById('find-count');
-    const btnCase = document.getElementById('btn-find-case');
-    
-    let isReplaceMode = false;
-    let matchCase = false;
-    
-    function updateSearchState(searchTerm: string, updateStateOnly = false) {
-        if (!state.editor) return;
-        state.editor.action((ctx) => {
-            try {
-                const view = ctx.get(editorViewCtx);
-                if (!view || !view.state) return;
-                const tr = view.state.tr;
-                tr.setMeta(searchPluginKey, { searchTerm, matchCase });
-                view.dispatch(tr);
-                
-                if (!updateStateOnly) {
-                    updateUI(view.state);
-                }
-            } catch (e) {
-                // Ignore context not ready
-            }
-        });
-    }
-    
-    function updateUI(pmState: any) {
-        const searchState = searchPluginKey.getState(pmState);
-        if (searchState) {
-            const total = searchState.matches.length;
-            if (total === 0) {
-                if (countSpan) countSpan.textContent = findInput?.value ? 'No results' : '';
-            } else {
-                const active = searchState.activeIndex + 1;
-                if (countSpan) countSpan.textContent = `${active} of ${total}`;
-            }
-        }
-    }
-    
-    function nextMatch(dir: number) {
-        if (!state.editor) return;
-        state.editor.action((ctx) => {
-            try {
-                const view = ctx.get(editorViewCtx);
-                if (!view || !view.state) return;
-                const searchState = searchPluginKey.getState(view.state);
-                if (!searchState || searchState.matches.length === 0) return;
-                
-                let nextIndex = searchState.activeIndex + dir;
-                if (nextIndex < 0) nextIndex = searchState.matches.length - 1;
-                if (nextIndex >= searchState.matches.length) nextIndex = 0;
-                
-                const tr = view.state.tr;
-                tr.setMeta(searchPluginKey, { activeIndex: nextIndex });
-                view.dispatch(tr);
-                updateUI(view.state);
-            } catch(e) {}
-        });
-    }
+  const findWidget = document.getElementById('find-widget');
+  const findInput = document.getElementById('find-input') as HTMLInputElement;
+  const replaceRow = document.getElementById('replace-row');
+  const replaceInput = document.getElementById('replace-input') as HTMLInputElement;
+  const countSpan = document.getElementById('find-count');
+  const btnCase = document.getElementById('btn-find-case');
 
-    function doReplace() {
-        if (!state.editor) return;
-        state.editor.action((ctx) => {
-            try {
-                const view = ctx.get(editorViewCtx);
-                if (!view || !view.state) return;
-                const searchState = searchPluginKey.getState(view.state);
-                if (!searchState || searchState.matches.length === 0 || searchState.activeIndex < 0) return;
-                
-                const match = searchState.matches[searchState.activeIndex];
-                const replaceText = replaceInput.value;
-                const tr = view.state.tr;
-                tr.insertText(replaceText, match.from, match.to);
-                view.dispatch(tr);
-            } catch(e) {}
-        });
+  let isReplaceMode = false;
+  let matchCase = false;
+
+  function updateSearchState(searchTerm: string, updateStateOnly = false) {
+    if (!state.editor) return;
+    state.editor.action((ctx) => {
+      try {
+        const view = ctx.get(editorViewCtx);
+        if (!view || !view.state) return;
+        const tr = view.state.tr;
+        tr.setMeta(searchPluginKey, { searchTerm, matchCase });
+        view.dispatch(tr);
+
+        if (!updateStateOnly) {
+          updateUI(view.state);
+        }
+      } catch (e) {
+        // Ignore context not ready
+      }
+    });
+  }
+
+  function updateUI(pmState: any) {
+    const searchState = searchPluginKey.getState(pmState);
+    if (searchState) {
+      const total = searchState.matches.length;
+      if (total === 0) {
+        if (countSpan) countSpan.textContent = findInput?.value ? 'No results' : '';
+      } else {
+        const active = searchState.activeIndex + 1;
+        if (countSpan) countSpan.textContent = `${active} of ${total}`;
+      }
     }
+  }
 
-    function doReplaceAll() {
-        if (!state.editor) return;
-        state.editor.action((ctx) => {
-            try {
-                const view = ctx.get(editorViewCtx);
-                if (!view || !view.state) return;
-                const searchState = searchPluginKey.getState(view.state);
-                if (!searchState || searchState.matches.length === 0) return;
-                
-                const tr = view.state.tr;
-                const replaceText = replaceInput.value;
-                for (let i = searchState.matches.length - 1; i >= 0; i--) {
-                    const match = searchState.matches[i];
-                    tr.insertText(replaceText, match.from, match.to);
-                }
-                view.dispatch(tr);
-            } catch(e) {}
-        });
+  function nextMatch(dir: number) {
+    if (!state.editor) return;
+    state.editor.action((ctx) => {
+      try {
+        const view = ctx.get(editorViewCtx);
+        if (!view || !view.state) return;
+        const searchState = searchPluginKey.getState(view.state);
+        if (!searchState || searchState.matches.length === 0) return;
+
+        let nextIndex = searchState.activeIndex + dir;
+        if (nextIndex < 0) nextIndex = searchState.matches.length - 1;
+        if (nextIndex >= searchState.matches.length) nextIndex = 0;
+
+        const tr = view.state.tr;
+        tr.setMeta(searchPluginKey, { activeIndex: nextIndex });
+        view.dispatch(tr);
+        updateUI(view.state);
+      } catch (e) {}
+    });
+  }
+
+  function doReplace() {
+    if (!state.editor) return;
+    state.editor.action((ctx) => {
+      try {
+        const view = ctx.get(editorViewCtx);
+        if (!view || !view.state) return;
+        const searchState = searchPluginKey.getState(view.state);
+        if (!searchState || searchState.matches.length === 0 || searchState.activeIndex < 0) return;
+
+        const match = searchState.matches[searchState.activeIndex];
+        const replaceText = replaceInput.value;
+        const tr = view.state.tr;
+        tr.insertText(replaceText, match.from, match.to);
+        view.dispatch(tr);
+      } catch (e) {}
+    });
+  }
+
+  function doReplaceAll() {
+    if (!state.editor) return;
+    state.editor.action((ctx) => {
+      try {
+        const view = ctx.get(editorViewCtx);
+        if (!view || !view.state) return;
+        const searchState = searchPluginKey.getState(view.state);
+        if (!searchState || searchState.matches.length === 0) return;
+
+        const tr = view.state.tr;
+        const replaceText = replaceInput.value;
+        for (let i = searchState.matches.length - 1; i >= 0; i--) {
+          const match = searchState.matches[i];
+          tr.insertText(replaceText, match.from, match.to);
+        }
+        view.dispatch(tr);
+      } catch (e) {}
+    });
+  }
+
+  function showWidget(replace: boolean) {
+    isReplaceMode = replace;
+    if (findWidget) findWidget.classList.add('visible');
+    if (replaceRow) replaceRow.style.display = replace ? 'flex' : 'none';
+
+    const icon = document.getElementById('icon-find-toggle');
+    if (icon) icon.style.transform = isReplaceMode ? 'rotate(90deg)' : 'rotate(0deg)';
+
+    findInput?.focus();
+    findInput?.select();
+
+    updateSearchState(findInput?.value || '');
+  }
+
+  function hideWidget() {
+    if (findWidget) findWidget.classList.remove('visible');
+    updateSearchState('', true);
+
+    if (state.editor) {
+      state.editor.action((ctx) => {
+        try {
+          const view = ctx.get(editorViewCtx);
+          if (view) view.focus();
+        } catch (e) {}
+      });
     }
+  }
 
-    function showWidget(replace: boolean) {
-        isReplaceMode = replace;
-        if (findWidget) findWidget.classList.add('visible');
-        if (replaceRow) replaceRow.style.display = replace ? 'flex' : 'none';
-        
-        const icon = document.getElementById('icon-find-toggle');
-        if (icon) icon.style.transform = isReplaceMode ? 'rotate(90deg)' : 'rotate(0deg)';
-        
-        findInput?.focus();
-        findInput?.select();
-        
-        updateSearchState(findInput?.value || '');
+  findInput?.addEventListener('input', () => {
+    updateSearchState(findInput.value);
+  });
+
+  findInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      nextMatch(e.shiftKey ? -1 : 1);
+    } else if (e.key === 'Escape') {
+      hideWidget();
     }
-    
-    function hideWidget() {
-        if (findWidget) findWidget.classList.remove('visible');
-        updateSearchState('', true);
-        
-        if (state.editor) {
-            state.editor.action((ctx) => {
-                try {
-                    const view = ctx.get(editorViewCtx);
-                    if (view) view.focus();
-                } catch(e) {}
-            });
-        }
+  });
+
+  replaceInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.metaKey || e.ctrlKey) {
+        doReplaceAll();
+      } else {
+        doReplace();
+      }
+    } else if (e.key === 'Escape') {
+      hideWidget();
     }
+  });
 
-    findInput?.addEventListener('input', () => {
-        updateSearchState(findInput.value);
-    });
-    
-    findInput?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            nextMatch(e.shiftKey ? -1 : 1);
-        } else if (e.key === 'Escape') {
-            hideWidget();
-        }
-    });
+  document.getElementById('btn-find-next')?.addEventListener('click', () => nextMatch(1));
+  document.getElementById('btn-find-prev')?.addEventListener('click', () => nextMatch(-1));
+  document.getElementById('btn-find-close')?.addEventListener('click', () => hideWidget());
+  document.getElementById('btn-replace')?.addEventListener('click', () => doReplace());
+  document.getElementById('btn-replace-all')?.addEventListener('click', () => doReplaceAll());
 
-    replaceInput?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            if (e.metaKey || e.ctrlKey) {
-                doReplaceAll();
-            } else {
-                doReplace();
-            }
-        } else if (e.key === 'Escape') {
-            hideWidget();
-        }
-    });
+  document.getElementById('btn-find-toggle')?.addEventListener('click', () => {
+    isReplaceMode = !isReplaceMode;
+    if (replaceRow) replaceRow.style.display = isReplaceMode ? 'flex' : 'none';
+    const icon = document.getElementById('icon-find-toggle');
+    if (icon) icon.style.transform = isReplaceMode ? 'rotate(90deg)' : 'rotate(0deg)';
+  });
 
-    document.getElementById('btn-find-next')?.addEventListener('click', () => nextMatch(1));
-    document.getElementById('btn-find-prev')?.addEventListener('click', () => nextMatch(-1));
-    document.getElementById('btn-find-close')?.addEventListener('click', () => hideWidget());
-    document.getElementById('btn-replace')?.addEventListener('click', () => doReplace());
-    document.getElementById('btn-replace-all')?.addEventListener('click', () => doReplaceAll());
-    
-    document.getElementById('btn-find-toggle')?.addEventListener('click', () => {
-        isReplaceMode = !isReplaceMode;
-        if (replaceRow) replaceRow.style.display = isReplaceMode ? 'flex' : 'none';
-        const icon = document.getElementById('icon-find-toggle');
-        if (icon) icon.style.transform = isReplaceMode ? 'rotate(90deg)' : 'rotate(0deg)';
-    });
-    
-    btnCase?.addEventListener('click', () => {
-        matchCase = !matchCase;
-        btnCase.classList.toggle('active', matchCase);
-        updateSearchState(findInput?.value || '');
-    });
+  btnCase?.addEventListener('click', () => {
+    matchCase = !matchCase;
+    btnCase.classList.toggle('active', matchCase);
+    updateSearchState(findInput?.value || '');
+  });
 
-    document.addEventListener('keydown', (e) => {
-        const cmdKey = e.metaKey || e.ctrlKey;
-        if (cmdKey && e.key.toLowerCase() === 'f') {
-            e.preventDefault();
-            showWidget(e.altKey);
-        }
-        if (e.key === 'Escape' && findWidget?.classList.contains('visible')) {
-            hideWidget();
-        }
-    });
-    
-    document.addEventListener('keyup', () => {
-        if (findWidget?.classList.contains('visible') && state.editor) {
-            state.editor.action((ctx) => {
-                try {
-                    const view = ctx.get(editorViewCtx);
-                    if (view && view.state) {
-                        updateUI(view.state);
-                    }
-                } catch(e) {}
-            });
-        }
-    });
+  document.addEventListener('keydown', (e) => {
+    const cmdKey = e.metaKey || e.ctrlKey;
+    if (cmdKey && e.key.toLowerCase() === 'f') {
+      e.preventDefault();
+      showWidget(e.altKey);
+    }
+    if (e.key === 'Escape' && findWidget?.classList.contains('visible')) {
+      hideWidget();
+    }
+  });
+
+  document.addEventListener('keyup', () => {
+    if (findWidget?.classList.contains('visible') && state.editor) {
+      state.editor.action((ctx) => {
+        try {
+          const view = ctx.get(editorViewCtx);
+          if (view && view.state) {
+            updateUI(view.state);
+          }
+        } catch (e) {}
+      });
+    }
+  });
 }
 
 function setupOtherEvents() {
@@ -783,7 +839,8 @@ function setupBookmarkTooltip() {
   const tooltip = document.createElement('div');
   tooltip.id = 'bookmark-tooltip';
   tooltip.className = 'bookmark-tooltip';
-  tooltip.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square-text" style="vertical-align: text-bottom; margin-right: 4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/></svg> Add Annotation';
+  tooltip.innerHTML =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square-text" style="vertical-align: text-bottom; margin-right: 4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/></svg> Add Annotation';
   document.body.appendChild(tooltip);
 
   let hideTimeout: any;
@@ -798,7 +855,7 @@ function setupBookmarkTooltip() {
     const range = selection.getRangeAt(0);
     const rect = range.getBoundingClientRect();
 
-    tooltip.style.left = `${rect.left + (rect.width / 2) - 50}px`;
+    tooltip.style.left = `${rect.left + rect.width / 2 - 50}px`;
     tooltip.style.top = `${rect.top - 40}px`;
     tooltip.classList.add('visible');
 
@@ -814,7 +871,7 @@ function setupBookmarkTooltip() {
     if (selection) {
       vscode.postMessage({ type: 'addBookmark', text: selection.toString().trim() });
       tooltip.classList.remove('visible');
-      
+
       // Optionally show a notification in webview
       const notif = document.createElement('div');
       notif.className = 'bookmark-notification';

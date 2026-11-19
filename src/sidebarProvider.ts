@@ -12,7 +12,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
     context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken
+    _token: vscode.CancellationToken,
   ) {
     this._view = webviewView;
 
@@ -62,15 +62,19 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const scanDir = config.get<string>('sidebarScanDirectory', '');
 
     let files: vscode.Uri[] = [];
-    
-    if (scanDir && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+
+    if (
+      scanDir &&
+      vscode.workspace.workspaceFolders &&
+      vscode.workspace.workspaceFolders.length > 0
+    ) {
       const folder = vscode.workspace.workspaceFolders[0];
       const pattern = new vscode.RelativePattern(folder, `${scanDir}/**/*.md`);
       files = await vscode.workspace.findFiles(pattern, '**/node_modules/**');
     } else {
       files = await vscode.workspace.findFiles('**/*.md', '**/node_modules/**');
     }
-    
+
     const fileStats = await Promise.all(
       files.map(async (uri) => {
         try {
@@ -79,7 +83,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         } catch {
           return { uri, stat: { mtime: 0 } as unknown as vscode.FileStat };
         }
-      })
+      }),
     );
 
     // Create two sorted arrays
@@ -92,7 +96,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         try {
           const contentUint8 = await vscode.workspace.fs.readFile(uri);
           const content = new TextDecoder().decode(contentUint8);
-          
+
           let title = uri.path.split('/').pop()?.replace(/\.md$/i, '') || 'Untitled';
           const titleMatch = content.match(/^#\s+(.+)$/m);
           if (titleMatch) {
@@ -102,10 +106,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           let thumbnailHtml = '';
           const imgMatch = content.match(/!\[.*?\]\((.+?)\)/);
           if (imgMatch) {
-            let imgPath = imgMatch[1];
+            const imgPath = imgMatch[1];
             const config = vscode.workspace.getConfiguration('markdownLive');
             const imagePublicPath = config.get<string>('imagePublicPath', '');
-            
+
             let imgUri: vscode.Uri | undefined;
             if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) {
               thumbnailHtml = `<img src="${escapeHtml(imgPath)}" class="note-thumbnail">`;
@@ -123,7 +127,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                   const dir = vscode.Uri.joinPath(uri, '..');
                   imgUri = vscode.Uri.joinPath(dir, imgPath);
                 }
-                
+
                 if (imgUri && this._view) {
                   const webviewImgUri = this._view.webview.asWebviewUri(imgUri);
                   thumbnailHtml = `<img src="${escapeHtml(webviewImgUri.toString())}" class="note-thumbnail">`;
@@ -159,14 +163,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
     const recentHtml = await generateHtmlList(recentFiles);
     const vaultHtml = await generateHtmlList(vaultFiles);
-    
+
     // Generate Bookmarks HTML
     const bookmarks = await BookmarkManager.getBookmarks();
     let bookmarksHtml = '';
     for (const bm of bookmarks) {
-       const uri = vscode.Uri.parse(bm.fileUri);
-       let title = uri.path.split('/').pop()?.replace(/\.md$/i, '') || 'Untitled';
-       bookmarksHtml += `
+      const uri = vscode.Uri.parse(bm.fileUri);
+      const title = uri.path.split('/').pop()?.replace(/\.md$/i, '') || 'Untitled';
+      bookmarksHtml += `
          <div class="note-item" data-open="${escapeHtml(bm.fileUri)}">
            <div class="note-content">
              <div class="note-title"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square-text" style="vertical-align: middle; margin-right: 4px; color: var(--vscode-list-activeSelectionForeground);"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/></svg>${escapeHtml(title)}</div>
@@ -177,7 +181,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
        `;
     }
     if (bookmarksHtml === '') {
-       bookmarksHtml = '<div class="empty-state">No annotations found.</div>';
+      bookmarksHtml = '<div class="empty-state">No annotations found.</div>';
     }
 
     this._view.webview.postMessage({ type: 'updateList', recentHtml, vaultHtml, bookmarksHtml });
