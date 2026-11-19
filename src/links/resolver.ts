@@ -223,6 +223,7 @@ export function safeNoteName(target: string): string | null {
   const path = normalisePath(stripExt(target.trim()));
   if (!path) return null;
   const segs = path.split('/');
+  // eslint-disable-next-line no-control-regex -- control characters are exactly what a path segment must not contain
   if (segs.some((s) => /[<>:"|?*\u0000-\u001f]/.test(s) || /^\.+$/.test(s) || s.length > 120))
     return null;
   return `${segs.join('/')}.md`;

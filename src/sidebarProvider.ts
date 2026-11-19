@@ -61,7 +61,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const config = vscode.workspace.getConfiguration('markdownLive');
     const scanDir = config.get<string>('sidebarScanDirectory', '');
 
-    let files: vscode.Uri[] = [];
+    let files: vscode.Uri[];
 
     if (
       scanDir &&
@@ -138,8 +138,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
           let cleanContent = content.replace(/^---[\s\S]+?---/, '');
           cleanContent = cleanContent.replace(/#+\s+.+/g, '');
-          cleanContent = cleanContent.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
-          cleanContent = cleanContent.replace(/!\[([^\]]*)\]\([^\)]+\)/g, '');
+          cleanContent = cleanContent.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+          cleanContent = cleanContent.replace(/!\[([^\]]*)\]\([^)]+\)/g, '');
           cleanContent = cleanContent.replace(/[*_~`>]/g, '');
           cleanContent = cleanContent.replace(/\s+/g, ' ').trim();
 

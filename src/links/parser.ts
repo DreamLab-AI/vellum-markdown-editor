@@ -166,7 +166,7 @@ export function findUnlinkedMentions(note: ParsedNote, name: string): Mention[] 
       if (spans.some((l) => start < l.end && end > l.start)) continue;
       // Inside the text or URL of any other Markdown link or autolink.
       const before = line.slice(0, start);
-      if (/\[[^\]]*$/.test(before) && /^[^\[]*\]\(/.test(line.slice(end))) continue;
+      if (/\[[^\]]*$/.test(before) && /^[^[]*\]\(/.test(line.slice(end))) continue;
       if (/\]\([^)]*$/.test(before) || /<[^>\s]*$/.test(before) || /https?:\/\/\S*$/.test(before))
         continue;
       out.push({ line: lineNo, start, end });

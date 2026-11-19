@@ -123,7 +123,7 @@ const wikilinkView = $view(wikilinkSchema.node, () => (node) => {
 /** Typing the closing `]]` turns the text into a wikilink. */
 const wikilinkInputRule = $inputRule(
   (ctx) =>
-    new InputRule(/(!?)\[\[([^\[\]\n]+)\]\]$/, (state, match, start, end) => {
+    new InputRule(/(!?)\[\[([^[\]\n]+)\]\]$/, (state, match, start, end) => {
       const [part] = splitWikilinks(match[0]);
       if (!part || typeof part === 'string') return null;
       return state.tr.replaceWith(start, end, wikilinkSchema.type(ctx).create(part));

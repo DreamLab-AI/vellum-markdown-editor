@@ -158,7 +158,7 @@ export function registerLinks(context: vscode.ExtensionContext): LinkIndex {
       {
         async provideCompletionItems(doc, pos) {
           const before = doc.lineAt(pos.line).text.slice(0, pos.character);
-          const open = /\[\[([^\[\]|#]*)$/.exec(before);
+          const open = /\[\[([^[\]|#]*)$/.exec(before);
           if (!open) return undefined;
           await index.whenReady();
           const range = new vscode.Range(

@@ -49,7 +49,9 @@ export async function handleWebviewMessage(
             fsPath = fsPath.substring(1);
           }
           uriToOpen = vscode.Uri.file(fsPath);
-        } catch (err) {}
+        } catch {
+          // Not a decodable path: uriToOpen stays unset and nothing is opened.
+        }
       } else if (e.value) {
         const href = decodeURIComponent(e.value);
         if (
@@ -198,7 +200,7 @@ export async function handleWebviewMessage(
         const target = selected.create ?? index!.linkTextFor(selected.uri!, document.uri);
         webviewPanel.webview.postMessage({
           type: 'insertWikilink',
-          text: `[[${target.replace(/[\[\]|#]/g, ' ').trim()}]]`,
+          text: `[[${target.replace(/[[\]|#]/g, ' ').trim()}]]`,
         });
         break;
       }
@@ -602,7 +604,9 @@ export async function handleWebviewMessage(
           targetDir = vscode.Uri.joinPath(workspaceFolders[0].uri, '.vscode');
           try {
             await vscode.workspace.fs.createDirectory(targetDir);
-          } catch (err) {}
+          } catch {
+            // The directory already exists.
+          }
         }
 
         const tempFileUri = vscode.Uri.joinPath(targetDir, 'print-preview.html');

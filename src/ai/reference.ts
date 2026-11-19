@@ -139,7 +139,7 @@ export function escapeWikilinkPipesInTables(markdown: string): string {
     .split('\n')
     .map((line) =>
       /^\s*\|/.test(line)
-        ? line.replace(/\[\[[^\[\]\n]*\]\]/g, (link) => link.replace(/(?<!\\)\|/g, '\\|'))
+        ? line.replace(/\[\[[^[\]\n]*\]\]/g, (link) => link.replace(/(?<!\\)\|/g, '\\|'))
         : line,
     )
     .join('\n');

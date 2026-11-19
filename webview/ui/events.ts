@@ -667,7 +667,9 @@ function setupFindWidgetEvents() {
         tr.setMeta(searchPluginKey, { activeIndex: nextIndex });
         view.dispatch(tr);
         updateUI(view.state);
-      } catch (e) {}
+      } catch {
+        // The editor view is not ready or was torn down: skip this action.
+      }
     });
   }
 
@@ -685,7 +687,9 @@ function setupFindWidgetEvents() {
         const tr = view.state.tr;
         tr.insertText(replaceText, match.from, match.to);
         view.dispatch(tr);
-      } catch (e) {}
+      } catch {
+        // The editor view is not ready or was torn down: skip this action.
+      }
     });
   }
 
@@ -705,7 +709,9 @@ function setupFindWidgetEvents() {
           tr.insertText(replaceText, match.from, match.to);
         }
         view.dispatch(tr);
-      } catch (e) {}
+      } catch {
+        // The editor view is not ready or was torn down: skip this action.
+      }
     });
   }
 
@@ -732,7 +738,9 @@ function setupFindWidgetEvents() {
         try {
           const view = ctx.get(editorViewCtx);
           if (view) view.focus();
-        } catch (e) {}
+        } catch {
+          // The editor view is not ready or was torn down: skip this action.
+        }
       });
     }
   }
@@ -801,7 +809,9 @@ function setupFindWidgetEvents() {
           if (view && view.state) {
             updateUI(view.state);
           }
-        } catch (e) {}
+        } catch {
+          // The editor view is not ready or was torn down: skip this action.
+        }
       });
     }
   });

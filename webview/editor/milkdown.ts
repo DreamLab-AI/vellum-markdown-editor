@@ -75,7 +75,7 @@ export async function initMilkdown(initialText: string) {
           }
           // Clean up aggressive escapes and auto-links per user feedback
           let cleanedMarkdown = markdownToRender
-            .replace(/\\([!\[\]()_])/g, '$1') // Remove backslash escapes before image/link chars and underscores
+            .replace(/\\([![\]()_])/g, '$1') // Remove backslash escapes before image/link chars and underscores
             .replace(/<([^>]+:\/\/[^>]+)>/g, '$1'); // Remove angle brackets around URLs
 
           cleanedMarkdown = escapeWikilinkPipesInTables(cleanedMarkdown);

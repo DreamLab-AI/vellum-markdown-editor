@@ -22,7 +22,7 @@ export async function insertTemplateCommand() {
   const folderUri = vscode.Uri.joinPath(workspaceFolders[0].uri, templateFolder);
 
   // Get all .md files in the folder
-  let files: string[] = [];
+  let files: string[];
   try {
     const entries = await vscode.workspace.fs.readDirectory(folderUri);
     files = entries

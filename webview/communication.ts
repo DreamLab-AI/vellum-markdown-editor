@@ -121,10 +121,11 @@ export function setupMessageListener() {
         }
         break;
 
-      case 'setMode':
+      case 'setMode': {
         const themeClass = message.theme === 2 ? 'vscode-dark' : 'vscode-light';
         document.body.className = themeClass;
         break;
+      }
 
       case 'linkState':
         setUnresolvedTargets(message.unresolved);

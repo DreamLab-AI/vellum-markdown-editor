@@ -122,7 +122,7 @@ export class NoteManager {
     }
 
     // Replace invalid characters for file names
-    filename = filename.replace(/[\\/:\*\?"<>\|]/g, '-');
+    filename = filename.replace(/[\\/:*?"<>|]/g, '-');
 
     const targetDirUri = defaultDirStr
       ? vscode.Uri.joinPath(workspaceFolders[0].uri, defaultDirStr)

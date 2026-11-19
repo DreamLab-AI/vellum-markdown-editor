@@ -39,7 +39,9 @@ export class BookmarkManager {
       const tmpDir = vscode.Uri.joinPath(uri, '..');
       try {
         await vscode.workspace.fs.createDirectory(tmpDir);
-      } catch (e) {} // Ignore if exists
+      } catch {
+        // The directory already exists.
+      }
       await vscode.workspace.fs.writeFile(
         uri,
         new TextEncoder().encode(JSON.stringify(bookmarks, null, 2)),
