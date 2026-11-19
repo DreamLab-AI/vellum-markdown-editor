@@ -5,3 +5,4 @@
 | 2026-11-17 | security-boundary | EALLOWREMOTE night 3; package eval runs verify-pins needing both GitHub tarballs | NONE | NONE | yes | INCONCLUSIVE |  | 046412d474c7 |  |  |  |
 | 2026-11-18 | ai-delivery | npm ci EALLOWREMOTE night 4; vowl-wasm+ontomark tarballs block all checks | NONE | NONE | yes | INCONCLUSIVE |  | be18e2a48088 |  |  |  |
 | 2026-11-19 | notes-workspace | npm ci EALLOWREMOTE night 5; verify-pins protection bars repo-side dep removal | NONE | NONE | yes | INCONCLUSIVE |  | 8ac3bc647751 |  |  |  |
+| 2026-11-19 | notes-workspace | File links from the [[ picker double-encoded %-encoded names; now fixed+tested | NONE | https://github.com/DreamLab-AI/vellum-markdown-editor/pull/2 | yes | ACCEPT |  | f5fc68e61925 |  |  |  |
