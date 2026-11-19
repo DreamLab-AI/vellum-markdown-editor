@@ -3,24 +3,8 @@ import { MarkdownLiveProvider } from '../editorProvider';
 import { BookmarkManager } from '../bookmarkManager';
 import { inlineScript, safeImageExt } from '../security';
 import { followWikilink } from '../links/register';
+import { fileNameFromUriPath, getRelativePath, relativeLinkPath } from '../links/relativePath';
 import { copyReference, revealSelection, selectionFromMessage, sendToAssistant } from '../ai/assistant';
-
-function getRelativePath(fromPath: string, toPath: string): string {
-  const fromParts = fromPath.split('/').filter(Boolean);
-  const toParts = toPath.split('/').filter(Boolean);
-  fromParts.pop(); // Remove the filename from 'fromPath'
-  let commonIndex = 0;
-  while (
-    commonIndex < fromParts.length &&
-    commonIndex < toParts.length &&
-    fromParts[commonIndex] === toParts[commonIndex]
-  ) {
-    commonIndex++;
-  }
-  const upCount = fromParts.length - commonIndex;
-  const relParts = Array(upCount).fill('..').concat(toParts.slice(commonIndex));
-  return relParts.join('/');
-}
 
 export async function handleWebviewMessage(
   e: any,
@@ -157,8 +141,8 @@ export async function handleWebviewMessage(
             break;
           }
           if (selected.uri) {
-            const relativePath = getRelativePath(document.uri.path, selected.uri.path).split('/').map((seg) => (seg === '..' ? seg : encodeURIComponent(seg))).join('/');
-            const fileName = selected.uri.path.split('/').pop() || 'untitled';
+            const relativePath = relativeLinkPath(document.uri.path, selected.uri.path);
+            const fileName = fileNameFromUriPath(selected.uri.path);
             const dotIndex = fileName.lastIndexOf('.');
             const baseName = dotIndex > 0 ? fileName.substring(0, dotIndex) : fileName;
             const isImage = /\.(png|jpe?g|gif|svg|webp)$/i.test(fileName);
