@@ -166,7 +166,6 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
     // Setup webview
     webviewPanel.webview.options = {
       enableScripts: true,
-      enableFindWidget: true,
       localResourceRoots: localResourceRoots,
     };
     webviewPanel.webview.html = getHtmlForWebview(webviewPanel.webview, document, this.context);
