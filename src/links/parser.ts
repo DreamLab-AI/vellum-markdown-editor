@@ -25,7 +25,11 @@ export interface ParsedNote {
   masked: string[];
 }
 
-const MD_LINK = /(!?)\[([^\]\n]*)\]\(\s*(<[^>\n]+>|[^)\s]+)(?:\s+"[^"\n]*")?\s*\)/g;
+// The text of a link can hold an image (`[![alt](img.png)](note.md)`) or an
+// escaped bracket (`[a\]b](note.md)`); both contain `]`, so they are matched
+// as whole units and never end the text early.
+const MD_LINK =
+  /(!?)\[((?:\\.|!?\[[^\]\n]*\]\((?:<[^>\n]+>|[^)\s]*)\)|[^\]\n])*)\]\(\s*(<[^>\n]+>|[^)\s]+)(?:\s+"[^"\n]*")?\s*\)/g;
 const EXTERNAL = /^([a-z][a-z0-9+.-]*:|\/\/|#)/i;
 
 function blank(s: string): string {
@@ -109,10 +113,12 @@ export function parseNote(text: string): ParsedNote {
       const end = start + m[0].length;
       if (taken.some(([a, b]) => start < b && end > a)) continue;
       let href = m[3];
-      let hrefStart = start + m[0].indexOf('](') + 2;
-      hrefStart +=
-        m[0].slice(m[0].indexOf('](') + 2).length -
-        m[0].slice(m[0].indexOf('](') + 2).trimStart().length;
+      // `m[0]` is `m[1] + '[' + m[2] + '](' + ...`, so the delimiter sits
+      // exactly after the text group; searching for `](` from the start of
+      // the match would hit the one inside an image in the text.
+      const afterText = m[1].length + 1 + m[2].length;
+      const tail = m[0].slice(afterText + 2);
+      let hrefStart = start + afterText + 2 + (tail.length - tail.trimStart().length);
       if (href.startsWith('<')) {
         href = href.slice(1, -1);
         hrefStart += 1;
