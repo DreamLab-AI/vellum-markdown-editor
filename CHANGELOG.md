@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Fixed
+* Renaming an image is now refused when the image file lies outside the open workspace folders, so a crafted document can no longer rename files elsewhere on disk. Covered by unit tests; no rename flow was manually tested.
 * An image pasted just before the document shrank (for example, text deleted while the image was still saving) no longer disappears when its file save finishes. Covered by unit tests; the editor flow was not manually tested.
 * A Markdown link that wraps an image, such as `[![alt](img.png)](Note.md)`, now counts as a link to the note: it appears in Backlinks and the note graph, and renaming the note rewrites it. Previously it was invisible to all three. Covered by unit tests; the live-editor flow was not manually tested.
 

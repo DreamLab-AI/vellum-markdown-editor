@@ -131,6 +131,7 @@ Vellum links notes the way Obsidian does, and stores them as plain `[[wikilinks]
   mentions* (every line in another note that links here, wikilink or Markdown link) and
   *unlinked mentions* (its name appearing as plain text), with a button to turn a mention into
   a link.
+  Renaming an image is refused when the file lies outside the open workspace folders.
   An image pasted just before the document shrank no longer disappears when its file save
   finishes.
   A Markdown link that wraps an image (`[![alt](img.png)](Note.md)`) counts as a link to the

@@ -365,6 +365,36 @@ export async function handleWebviewMessage(
         oldFileUri = vscode.Uri.joinPath(document.uri, '..', e.src);
       }
 
+      // The src arrives from the webview (ultimately the note's own image
+      // src), so a rename may only address a file inside an open workspace
+      // folder. Dot segments are resolved here rather than trusted to the
+      // URI join, so a src such as "../../../outside.png" cannot reach
+      // vscode.workspace.fs.rename above a workspace root.
+      const folders = vscode.workspace.workspaceFolders ?? [];
+      if (folders.length > 0) {
+        const resolveSegments = (p: string): string => {
+          const out: string[] = [];
+          for (const segment of p.split('/')) {
+            if (segment === '..') out.pop();
+            else if (segment !== '.' && segment !== '') out.push(segment);
+          }
+          return '/' + out.join('/');
+        };
+        const resolvedPath = resolveSegments(oldFileUri.path);
+        const insideWorkspace = folders.some((folder) => {
+          const rootPath = resolveSegments(folder.uri.path);
+          return rootPath === '/' || resolvedPath.startsWith(rootPath + '/');
+        });
+        if (!insideWorkspace) {
+          const msg =
+            lang === 'vi'
+              ? 'Không thể đổi tên ảnh nằm ngoài workspace.'
+              : 'Cannot rename an image outside the workspace.';
+          vscode.window.showErrorMessage(msg);
+          break;
+        }
+      }
+
       const oldFileName = oldFileUri.path.split('/').pop() || '';
       const lastDotIndex = oldFileName.lastIndexOf('.');
       const baseName = lastDotIndex !== -1 ? oldFileName.substring(0, lastDotIndex) : oldFileName;
