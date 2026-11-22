@@ -133,6 +133,8 @@ Vellum links notes the way Obsidian does, and stores them as plain `[[wikilinks]
   a link.
   An image pasted just before the document shrank no longer disappears when its file save
   finishes.
+  A Markdown link that wraps an image (`[![alt](img.png)](Note.md)`) counts as a link to the
+  note.
 - **Rename safely.** Rename or move a note or a folder in the Explorer and every link to it is
   rewritten in the same step, so one undo reverts both. Headings and shown text are kept; links
   that still resolve are left alone. Turn this off with `markdownLive.updateLinksOnRename`.
