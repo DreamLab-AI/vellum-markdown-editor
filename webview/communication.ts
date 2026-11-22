@@ -228,8 +228,12 @@ export function setupMessageListener() {
             const view = ctx.get(editorViewCtx);
             const { state: pmState, dispatch } = view;
             const imageNode = pmState.schema.nodes.image.create({ src: message.url, alt: 'image' });
-            const pastePos =
+            // pastePos was captured at paste time, before the host saved the
+            // file; the document may have shrunk since, and a stale position
+            // would make tr.insert throw and silently drop the image.
+            const requested =
               message.pastePos !== undefined ? message.pastePos : pmState.selection.from;
+            const pastePos = clampPosition(requested, pmState.doc.content.size);
             const tr = pmState.tr.insert(pastePos, imageNode);
             dispatch(tr);
           });

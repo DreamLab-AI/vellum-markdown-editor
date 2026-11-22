@@ -132,6 +132,8 @@ Vellum links notes the way Obsidian does, and stores them as plain `[[wikilinks]
   *unlinked mentions* (its name appearing as plain text), with a button to turn a mention into
   a link.
   Renaming an image is refused when the file lies outside the open workspace folders.
+  An image pasted just before the document shrank no longer disappears when its file save
+  finishes.
   A Markdown link that wraps an image (`[![alt](img.png)](Note.md)`) counts as a link to the
   note.
 - **Rename safely.** Rename or move a note or a folder in the Explorer and every link to it is
