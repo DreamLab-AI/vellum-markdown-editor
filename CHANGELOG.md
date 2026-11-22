@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+* Renaming an image is now refused when the image file lies outside the open workspace folders, so a crafted document can no longer rename files elsewhere on disk. Covered by unit tests; no rename flow was manually tested.
+
 ## [0.4.1] - 2026-11-14
 
 ### Added
