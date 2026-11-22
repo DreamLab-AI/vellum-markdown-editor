@@ -131,6 +131,7 @@ Vellum links notes the way Obsidian does, and stores them as plain `[[wikilinks]
   mentions* (every line in another note that links here, wikilink or Markdown link) and
   *unlinked mentions* (its name appearing as plain text), with a button to turn a mention into
   a link.
+  An image pasted just before the document shrank no longer disappears when its file saven  finishes.
 - **Rename safely.** Rename or move a note or a folder in the Explorer and every link to it is
   rewritten in the same step, so one undo reverts both. Headings and shown text are kept; links
   that still resolve are left alone. Turn this off with `markdownLive.updateLinksOnRename`.

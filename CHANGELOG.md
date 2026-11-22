@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+* An image pasted just before the document shrank (for example, text deleted while the image was still saving) no longer disappears when its file save finishes. Covered by unit tests; the editor flow was not manually tested.
+
 ## [0.4.1] - 2026-11-14
 
 ### Added
