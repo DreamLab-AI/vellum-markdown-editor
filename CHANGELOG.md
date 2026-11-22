@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+* A Markdown link that wraps an image, such as `[![alt](img.png)](Note.md)`, now counts as a link to the note: it appears in Backlinks and the note graph, and renaming the note rewrites it. Previously it was invisible to all three. Covered by unit tests; the live-editor flow was not manually tested.
+
 ## [0.4.1] - 2026-11-14
 
 ### Added
