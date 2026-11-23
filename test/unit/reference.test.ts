@@ -70,6 +70,16 @@ test('buildLinkContext caps long lists and says how many were left out', () => {
   assert.equal((text.match(/^- @n/gm) || []).length, 3);
 });
 
+test('buildLinkContext caps the unresolved list too, and says how many were left out', () => {
+  const unresolved = Array.from({ length: 5 }, (_, i) => `Missing ${i}`);
+  const text = buildLinkContext({ note: 'H.md', backlinks: [], outgoing: [], unresolved }, 3);
+  assert.match(
+    text,
+    /Links to notes that do not exist yet: \[\[Missing 0\]\], \[\[Missing 1\]\], \[\[Missing 2\]\], … and 2 more/,
+  );
+  assert.equal((text.match(/\[\[Missing/g) || []).length, 3);
+});
+
 test('claudeOpenUri is the documented handler with an encoded prompt', () => {
   assert.equal(claudeOpenUri('review @a b.md#1-2 & more'), 'vscode://anthropic.claude-code/open?prompt=review%20%40a%20b.md%231-2%20%26%20more');
 });
