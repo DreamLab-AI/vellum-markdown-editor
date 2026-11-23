@@ -18,14 +18,18 @@ const PINS = [
   // The note graph (dist/graph.js): Ontomark's shared renderer and layout driver, and the
   // vowl-wasm force layout. Both come from immutable GitHub release tarballs, not the npm
   // registry. The WebAssembly module is compiled Rust, so its dependency notices ship with it.
-  { pkg: '@dreamlab-ai/ontomark-graph', version: '0.3.0', file: 'src/index.js', sha256: '39a5668f8577c23e62fec539cff9c9d266259f683fd92cf4360dd841040e98e5' },
-  { pkg: '@dreamlab-ai/ontomark-graph', version: '0.3.0', file: 'src/layout.js', sha256: 'e3e60ab03aa72361abda35e5ccb78812a2dec7d370393e04a81cc2cc18ac96f2' },
-  { pkg: '@dreamlab-ai/ontomark-graph', version: '0.3.0', file: 'LICENSE-MIT', sha256: '23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3', copyTo: 'dist/licenses/ontomark-graph-LICENSE-MIT' },
-  { pkg: '@dreamlab-ai/ontomark-graph', version: '0.3.0', file: 'NOTICE', sha256: '8c43a70ce56c33461790b18933c6393ee640e8285753313b72a38d605935964a', copyTo: 'dist/licenses/ontomark-graph-NOTICE' },
-  { pkg: '@dreamlab-ai/vowl-wasm', version: '0.2.3', file: 'vowl_wasm.js', sha256: 'c0e1fa8eff008d813e788fd3a8a916f3c353a060347908fcbacbc2f85302aad3' },
-  { pkg: '@dreamlab-ai/vowl-wasm', version: '0.2.3', file: 'vowl_wasm_bg.wasm', sha256: 'e056639c75d2063371b3b8e24f25588f07ff4ec85cf311642c99858333b8da0a' },
-  { pkg: '@dreamlab-ai/vowl-wasm', version: '0.2.3', file: 'LICENSE', sha256: '0f4fcaecb008764bb7afd316b52a77f830f3ad32594658352f51ed98b3a9c317', copyTo: 'dist/licenses/vowl-wasm-LICENSE' },
-  { pkg: '@dreamlab-ai/vowl-wasm', version: '0.2.3', file: 'THIRD-PARTY-NOTICES.md', sha256: 'cd168dca86c09653390296532cd6ba02660665cad6e612714b085a8728d2a8fe', copyTo: 'dist/licenses/vowl-wasm-THIRD-PARTY-NOTICES.md' },
+  // Release tarballs (2026-11-23): ontomark-graph-v0.4.0 sha256 af471336194ece0cbb8b99bd0d4906cbffe99298c4b0bcd1a7d1ddbfbda287f0,
+  // vowl-wasm v0.4.0 sha256 727ac72533005d2f86bfb3dceb6f7d378dffca3a9c2941aaaa45a523bab12301.
+  // Against the previous pins (graph 0.3.0, vowl-wasm 0.2.3) the renderer (src/index.js) and both licences are
+  // byte-identical; the layout driver, the glue, the module and the vowl-wasm notices changed.
+  { pkg: '@dreamlab-ai/ontomark-graph', version: '0.4.0', file: 'src/index.js', sha256: '39a5668f8577c23e62fec539cff9c9d266259f683fd92cf4360dd841040e98e5' },
+  { pkg: '@dreamlab-ai/ontomark-graph', version: '0.4.0', file: 'src/layout.js', sha256: '47ba07cb362e95c4b16fe56504d2eef8860fd5d31215b24aa05bda0f60e67147' },
+  { pkg: '@dreamlab-ai/ontomark-graph', version: '0.4.0', file: 'LICENSE-MIT', sha256: '23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3', copyTo: 'dist/licenses/ontomark-graph-LICENSE-MIT' },
+  { pkg: '@dreamlab-ai/ontomark-graph', version: '0.4.0', file: 'NOTICE', sha256: '8c43a70ce56c33461790b18933c6393ee640e8285753313b72a38d605935964a', copyTo: 'dist/licenses/ontomark-graph-NOTICE' },
+  { pkg: '@dreamlab-ai/vowl-wasm', version: '0.4.0', file: 'vowl_wasm.js', sha256: 'c95715db128215925077f08f58a54a664e81458bd28a2f0145e92d3dd3e7187d' },
+  { pkg: '@dreamlab-ai/vowl-wasm', version: '0.4.0', file: 'vowl_wasm_bg.wasm', sha256: '47c2f1d9ea333f3bbcff7c1ff33b4677f7ac7af5a526ff53433ffea70340c6af' },
+  { pkg: '@dreamlab-ai/vowl-wasm', version: '0.4.0', file: 'LICENSE', sha256: '0f4fcaecb008764bb7afd316b52a77f830f3ad32594658352f51ed98b3a9c317', copyTo: 'dist/licenses/vowl-wasm-LICENSE' },
+  { pkg: '@dreamlab-ai/vowl-wasm', version: '0.4.0', file: 'THIRD-PARTY-NOTICES.md', sha256: '9af37d3c83d6d47c5f3c5782cfd22e21cff344568f4cfe83be365aeee0cce776', copyTo: 'dist/licenses/vowl-wasm-THIRD-PARTY-NOTICES.md' },
 ];
 
 let failed = false;

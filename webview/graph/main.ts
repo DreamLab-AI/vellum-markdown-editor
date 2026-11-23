@@ -4,7 +4,11 @@
 // three things only (see src/graph/messages.ts).
 import { mountGraph } from '@dreamlab-ai/ontomark-graph';
 import type { GraphData, GraphNode, GraphView } from '@dreamlab-ai/ontomark-graph';
-import { createLayout, vowlEngine } from '@dreamlab-ai/ontomark-graph/layout';
+import {
+  createLayout,
+  RECOMMENDED_LAYOUT_PARAMS,
+  vowlEngine,
+} from '@dreamlab-ai/ontomark-graph/layout';
 import type { Layout } from '@dreamlab-ai/ontomark-graph/layout';
 import init, * as vowl from '@dreamlab-ai/vowl-wasm';
 import wasmBytes from '@dreamlab-ai/vowl-wasm/vowl_wasm_bg.wasm';
@@ -284,6 +288,12 @@ declare function acquireVsCodeApi(): { postMessage(message: GraphRequest): void 
   init({ module_or_path: wasmBytes })
     .then(() => {
       layout = createLayout(vowlEngine(vowl), {
+        // vowl-wasm 0.4.0 collision and component gravity, tuned for the renderer's node sizes
+        // (at most 12 px radius plus a label): nodes and labels stop overlapping, and notes with
+        // no links settle near the rest of the graph instead of drifting off.
+        params: RECOMMENDED_LAYOUT_PARAMS,
+        onIgnoredParams: (keys: string[]) =>
+          console.warn('Vellum graph layout ignored parameters:', keys.join(', ')),
         onPositions: (xy) => {
           view?.setPositions(xy);
           if (autoFit) view?.fit();

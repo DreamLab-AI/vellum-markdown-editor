@@ -35,8 +35,8 @@ package under `node_modules/` and are reproduced by reference here.
 | ProseMirror (`prosemirror-*`) | per lockfile | © Marijn Haverbeke and others |
 | CodeMirror 6 (`@codemirror/*`) | per lockfile | © Marijn Haverbeke and others |
 | KaTeX (`katex`) | per lockfile | © 2013-2020 Khan Academy and other contributors |
-| Ontomark graph (`@dreamlab-ai/ontomark-graph`) | 0.3.0, pinned by SHA-256 | © 2026 DreamLab-AI and contributors. MIT OR Apache-2.0, taken under MIT |
-| vowl-wasm (`@dreamlab-ai/vowl-wasm`) | 0.2.3, pinned by SHA-256 | © 2025-2026 DreamLab-AI. A clean-room implementation of the VOWL notation of WebVOWL, © 2014-2019 Vincent Link, Steffen Lohmann, Eduard Marbach, Stefan Negru, Vitalis Wiens |
+| Ontomark graph (`@dreamlab-ai/ontomark-graph`) | 0.4.0, pinned by SHA-256 | © 2026 DreamLab-AI and contributors. MIT OR Apache-2.0, taken under MIT |
+| vowl-wasm (`@dreamlab-ai/vowl-wasm`) | 0.4.0, pinned by SHA-256 | © 2025-2026 DreamLab-AI. A clean-room implementation of the VOWL notation of WebVOWL, © 2014-2019 Vincent Link, Steffen Lohmann, Eduard Marbach, Stefan Negru, Vitalis Wiens |
 
 The last two draw and arrange the note graph. vowl-wasm is a WebAssembly module compiled from
 Rust, so it contains its Rust dependencies. Their notices, and the licences of both packages,
