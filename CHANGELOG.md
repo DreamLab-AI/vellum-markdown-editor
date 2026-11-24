@@ -5,7 +5,10 @@ All notable changes to Vellum Markdown Editor are documented here, followed by u
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.5.0] - 2026-11-23
+
+### Changed
+* The note graph keeps notes from overlapping. The layout moves to `vowl-wasm` 0.4.0 and `@dreamlab-ai/ontomark-graph` 0.4.0, from their immutable release tarballs and verified by SHA-256 at build time, and turns on the new collision and component-gravity forces with ontomark-graph's recommended settings (collision radius 21, strength 0.7, 3 passes, component gravity 0.1). Nodes and their labels no longer sit on top of each other, and notes with no links stay near the rest of the graph. Covered by a unit test against the real module; the panel was not re-checked in an installed VS Code.
 
 ### Fixed
 * Renaming an image is now refused when the image file lies outside the open workspace folders, so a crafted document can no longer rename files elsewhere on disk. Covered by unit tests; no rename flow was manually tested.

@@ -60,7 +60,7 @@ template in `src/graph/graphPanel.ts` and loads one bundled script, `dist/graph.
   blocked, and `'unsafe-eval'` is still not used anywhere. The module's bytes are inside
   `dist/graph.js`, so it is compiled from memory: nothing is fetched and no worker is started.
 - **The module is pinned.** `@dreamlab-ai/vowl-wasm` 0.2.3 and `@dreamlab-ai/ontomark-graph`
-  0.3.0 come from immutable GitHub release tarballs, with lockfile integrity at install and
+  0.3.0 (0.4.0 of both since 2026-11-23; see the note below) come from immutable GitHub release tarballs, with lockfile integrity at install and
   SHA-256 of the exact files (`vowl_wasm_bg.wasm`, `vowl_wasm.js`, the renderer and the layout
   driver) at build time in `scripts/verify-pins.mjs`. The module is Rust compiled by its own
   project's release workflow; this repository does not rebuild it, so its contents are trusted
@@ -81,6 +81,28 @@ template in `src/graph/graphPanel.ts` and loads one bundled script, `dist/graph.
   policy violation and the only resource loaded was the page's own script.
 - **Not checked:** the panel in an installed VS Code or vscode.dev. VS Code injects its own
   bootstrap and theme variables into a webview, and those were stood in for here.
+
+### Layout pins moved to 0.4.0 (2026-11-23)
+
+Both graph pins moved to their 0.4.0 GitHub release tarballs, each checked against its
+published SHA-256 before install: `vowl-wasm-0.4.0-pkg.tgz`
+(`727ac72533005d2f86bfb3dceb6f7d378dffca3a9c2941aaaa45a523bab12301`, the same tarball as npm
+`@dreamlab-ai/vowl-wasm@0.4.0`) and `dreamlab-ai-ontomark-graph-0.4.0.tgz`
+(`af471336194ece0cbb8b99bd0d4906cbffe99298c4b0bcd1a7d1ddbfbda287f0`). `scripts/verify-pins.mjs`
+now pins `vowl_wasm_bg.wasm` `47c2f1d9…c6af`, `vowl_wasm.js` `c95715db…187d`, the layout driver
+`47ba07cb…7147` and the vowl-wasm notices `9af37d3c…e776` (identical to the release's separate
+notices asset). The renderer (`src/index.js`) and both licences are byte-identical to the
+previous pins.
+
+What changed in behaviour: the panel now passes `RECOMMENDED_LAYOUT_PARAMS` (collision radius 21,
+strength 0.7, 3 passes, component gravity 0.1) to the layout, which turns on two new forces in the
+module. They are plain numbers set through the module's existing `setParam` call. The panel's
+policy, its messages, what it is given and the bytes it compiles from memory are otherwise
+unchanged, and no new capability or resource is requested. vowl-wasm's upstream notices record an
+unchanged Rust dependency closure (53 package/version pairs). A unit test runs the real 0.4.0
+module through the same `vowlEngine` call as the panel and checks that all four parameters are
+applied and that a crowded graph settles with no two nodes closer than the collision radius. The
+panel was not re-run in an installed VS Code for this change.
 
 ## VS Code follow-up (2026-11-14)
 

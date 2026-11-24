@@ -287,7 +287,7 @@ folders are not followed.
 ## Status
 
 Vellum is available on the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=dreamlab-ai.vellum-markdown-editor).
-Version 0.4.1 adds the Note Graph and headless graph CLI; [PUBLISHING.md](PUBLISHING.md) records the release process.
+Version 0.4.1 added the Note Graph and headless graph CLI; 0.5.0 keeps graph nodes from overlapping (vowl-wasm 0.4.0 collision) and fixes image rename and paste edge cases. [PUBLISHING.md](PUBLISHING.md) records the release process.
 
 The current build was exercised in desktop VS Code 1.106.3 on Linux: live/source
 editing and saving, backlinks and mention linking, missing-note creation, Explorer
