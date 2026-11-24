@@ -92,9 +92,8 @@ export function buildLinkContext(input: LinkContextInput, limit = 40): string {
       .slice(0, limit)
       .map((t) => `[[${t}]]`)
       .join(', ');
-    const overflow =
-      missing.length > limit ? `, … and ${missing.length - limit} more` : '';
-    out.push('', `Links to notes that do not exist yet: ${list}${overflow}`);
+    const overflow = missing.length > limit ? `, … and ${missing.length - limit} more` : '';
+    out.push('', `Links to notes that do not exist yet (${missing.length}): ${list}${overflow}`);
   }
   return out.join('\n');
 }
