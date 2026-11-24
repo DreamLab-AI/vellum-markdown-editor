@@ -10,3 +10,4 @@
 | 2026-11-21 | webview-editor | Pasted images vanished when doc shrank before insertImage; pastePos now clamped | NONE | https://github.com/DreamLab-AI/vellum-markdown-editor/pull/5 | yes | ACCEPT |  | dae084e4ff1d |  |  |  |
 | 2026-11-22 | security-boundary | renameImage: webview src could address files outside the workspace; now refused | NONE | https://github.com/DreamLab-AI/vellum-markdown-editor/pull/6 | yes | ACCEPT |  | ab9099028734 |  |  |  |
 | 2026-11-23 | ai-delivery | AI link context now reports unresolved wikilinks left out past the 40-entry cap | NONE | https://github.com/DreamLab-AI/vellum-markdown-editor/pull/7 | yes | ACCEPT |  | 3ffcdfbab350 |  |  |  |
+| 2026-11-24 | notes-workspace | VETOED: Note deletion missed image assets with spaces or %20 names; now… | NONE | VETOED | yes | REJECT |  | 2e5806a9a475 |  |  |  |
