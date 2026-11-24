@@ -69,6 +69,7 @@ export interface LinkContextInput {
 /**
  * A prompt fragment that hands an assistant a note together with its place in
  * the link graph, as file references it can open itself.
+ * Every list is capped at `limit` entries and says how many were left out.
  */
 export function buildLinkContext(input: LinkContextInput, limit = 40): string {
   const uniq = <T>(xs: readonly T[]) => [...new Set(xs)];
@@ -86,14 +87,14 @@ export function buildLinkContext(input: LinkContextInput, limit = 40): string {
     if (fwd.length > limit) out.push(`- … and ${fwd.length - limit} more`);
   }
   const missing = uniq(input.unresolved);
-  if (missing.length)
-    out.push(
-      '',
-      `Links to notes that do not exist yet: ${missing
-        .slice(0, limit)
-        .map((t) => `[[${t}]]`)
-        .join(', ')}`,
-    );
+  if (missing.length) {
+    const list = missing
+      .slice(0, limit)
+      .map((t) => `[[${t}]]`)
+      .join(', ');
+    const overflow = missing.length > limit ? `, … and ${missing.length - limit} more` : '';
+    out.push('', `Links to notes that do not exist yet (${missing.length}): ${list}${overflow}`);
+  }
   return out.join('\n');
 }
 

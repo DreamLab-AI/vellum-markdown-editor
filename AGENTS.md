@@ -24,7 +24,7 @@ The extension cannot call you. A person triggers these, and the result arrives i
 - With `markdownLive.claudeDelivery: selection`, the note opens in a text editor with the
   lines selected, and Claude Code attaches the file and selection itself.
 - The **link-context block** (`Note: @x.md` / `Linked from (n):` / `Links to (n):` /
-  `Links to notes that do not exist yet:`) comes from the Backlinks panel button. It lists
+  `Links to notes that do not exist yet (n):`) comes from the Backlinks panel button. It lists
   references, not contents. Open the ones you need.
 
 ### You → the link graph (`vellum-graph`)

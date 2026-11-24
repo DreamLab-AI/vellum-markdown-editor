@@ -57,7 +57,7 @@ test('buildLinkContext lists the note, who links to it, what it links to and wha
     'Note: @Hub.md', '',
     'Linked from (2):', '- @a/One.md#3', '- @b/Two.md#1', '',
     'Links to (1):', '- @x/Out.md', '',
-    'Links to notes that do not exist yet: [[Ghost]]',
+    'Links to notes that do not exist yet (1): [[Ghost]]',
   ].join('\n'));
   assert.equal(buildLinkContext({ note: 'Solo.md', backlinks: [], outgoing: [], unresolved: [] }), 'Note: @Solo.md');
 });
@@ -68,6 +68,16 @@ test('buildLinkContext caps long lists and says how many were left out', () => {
   assert.match(text, /Linked from \(5\):/);
   assert.match(text, /… and 2 more/);
   assert.equal((text.match(/^- @n/gm) || []).length, 3);
+});
+
+test('buildLinkContext caps the unresolved list too, and says how many were left out', () => {
+  const unresolved = Array.from({ length: 5 }, (_, i) => `Missing ${i}`);
+  const text = buildLinkContext({ note: 'H.md', backlinks: [], outgoing: [], unresolved }, 3);
+  assert.match(
+    text,
+    /Links to notes that do not exist yet \(5\): \[\[Missing 0\]\], \[\[Missing 1\]\], \[\[Missing 2\]\], … and 2 more/,
+  );
+  assert.equal((text.match(/\[\[Missing/g) || []).length, 3);
 });
 
 test('claudeOpenUri is the documented handler with an encoded prompt', () => {
