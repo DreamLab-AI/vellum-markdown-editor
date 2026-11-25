@@ -69,9 +69,30 @@ interface Args {
   max?: number;
 }
 
-function wholeNumber(option: string, value: string): number {
+// The most positional arguments each command takes, as the usage text
+// documents. Extra arguments were silently ignored, so a mistyped option
+// could quietly change the answer: `neighbours Plan depth 2` ran with the
+// default depth instead of failing.
+const MAX_POSITIONAL: Record<string, number> = {
+  notes: 0,
+  links: 1,
+  backlinks: 1,
+  mentions: 1,
+  unresolved: 1,
+  context: 1,
+  resolve: 1,
+  linktext: 1,
+  graph: 0,
+  neighbours: 1,
+  orphans: 0,
+  rename: 2,
+};
+
+function wholeNumber(option: string, value: string, min: number, max: number): number {
   if (!/^\d+$/.test(value)) throw new UsageError(`${option} needs a whole number`);
-  return Number(value);
+  const n = Number(value);
+  if (n < min || n > max) throw new UsageError(`${option} must be ${min} to ${max}`);
+  return n;
 }
 
 function parseArgs(argv: string[]): Args | 'help' {
@@ -88,8 +109,8 @@ function parseArgs(argv: string[]): Args | 'help' {
     else if (a === '--apply') out.apply = true;
     else if (a === '--root') out.root = value();
     else if (a === '--from') out.from = value();
-    else if (a === '--depth') out.depth = wholeNumber(a, value());
-    else if (a === '--max') out.max = wholeNumber(a, value());
+    else if (a === '--depth') out.depth = wholeNumber(a, value(), 1, 3);
+    else if (a === '--max') out.max = wholeNumber(a, value(), 10, 1000);
     else if (a.startsWith('--')) throw new UsageError(`unknown option ${a}`);
     else if (!out.command) out.command = a;
     else out.positional.push(a);
@@ -317,6 +338,14 @@ function main(argv: string[]): number {
     const root = resolvePath(args.root);
     if (!existsSync(root) || !statSync(root).isDirectory())
       throw new UsageError(`--root ${args.root} is not a folder`);
+    const maxPositional: number | undefined = MAX_POSITIONAL[args.command];
+    if (maxPositional !== undefined && args.positional.length > maxPositional) {
+      const what =
+        maxPositional === 0
+          ? 'no positional arguments'
+          : `at most ${maxPositional} argument${maxPositional === 1 ? '' : 's'}`;
+      throw new UsageError(`"${args.command}" takes ${what}`);
+    }
     const vault = new Vault(readNotes(root));
     const result = run(args, vault);
     if (args.command === 'rename' && args.apply) {
