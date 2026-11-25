@@ -128,3 +128,17 @@ test('CLI neighbours prints the graph view\'s neighbourhood and validates its bo
   assert.equal(run(root, 'neighbours', 'Plan', '--depth', 'two').status, 2);
   assert.equal(run(root, 'neighbours').status, 2);
 });
+
+test('CLI rejects extra arguments and out-of-range options instead of ignoring them', () => {
+  const root = fixture();
+  // "depth 2" without -- used to be ignored, answering with the default depth.
+  assert.equal(run(root, 'neighbours', 'Plan', 'depth', '2').status, 2);
+  assert.equal(run(root, 'notes', 'extra').status, 2);
+  assert.equal(run(root, 'unresolved', 'Plan', 'extra').status, 2);
+  assert.equal(run(root, 'rename', 'notes/Plan.md', 'archive/Roadmap.md', 'extra').status, 2);
+  assert.equal(run(root, 'neighbours', 'Plan', '--depth', '5').status, 2);
+  assert.equal(run(root, 'neighbours', 'Plan', '--max', '5').status, 2);
+  assert.equal(run(root, 'neighbours', 'Plan', '--depth', '3', '--max', '1000').status, 0);
+  assert.equal(readFileSync(join(root, 'Index.md'), 'utf8'), 'See [[notes/Plan]].\n');
+  assert.ok(existsSync(join(root, 'notes/Plan.md')));
+});
