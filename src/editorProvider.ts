@@ -1,7 +1,7 @@
 import { getHtmlForWebview } from './webview/template';
 import { handleWebviewMessage } from './handlers/messageHandler';
 import * as vscode from 'vscode';
-import { newNonce } from './security';
+import { escapeHtml, newNonce } from './security';
 import type { LinkIndex } from './links/linkIndex';
 
 export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
@@ -136,10 +136,10 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
         </head>
         <body>
           <div class="icon">🔍</div>
-          <h2>${title}</h2>
-          <p>${desc}</p>
+          <h2>${escapeHtml(title)}</h2>
+          <p>${escapeHtml(desc)}</p>
           <br/>
-          <button id="reopen">${btn}</button>
+          <button id="reopen">${escapeHtml(btn)}</button>
           <script nonce="${nonce}">
             const api = acquireVsCodeApi();
             document.getElementById('reopen').addEventListener('click', () => api.postMessage({ command: 'reopen' }));
@@ -148,7 +148,7 @@ export class MarkdownLiveProvider implements vscode.CustomTextEditorProvider {
         </html>
       `;
       webviewPanel.webview.onDidReceiveMessage(async (e) => {
-        if (e.command === 'reopen') {
+        if (e && typeof e === 'object' && e.command === 'reopen') {
           if (diffTab && diffTab.input instanceof vscode.TabInputTextDiff) {
             const original = diffTab.input.original;
             const modified = diffTab.input.modified;
