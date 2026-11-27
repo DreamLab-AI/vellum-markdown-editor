@@ -13,3 +13,4 @@
 | 2026-11-24 | notes-workspace | VETOED: Note deletion missed image assets with spaces or %20 names; now… | NONE | VETOED | yes | REJECT |  | 2e5806a9a475 |  |  |  |
 | 2026-11-25 | link-graph | vellum-graph ignored extra positional args; --depth/--max bounds now enforced | NONE | https://github.com/DreamLab-AI/vellum-markdown-editor/pull/10 | yes | ACCEPT |  | 1e7df0b9f770 |  |  |  |
 | 2026-11-26 | webview-editor | webview-editor source absent (only lockfile/CHANGELOG shown); scans untestable | NONE | NONE | yes | INCONCLUSIVE |  | 8f3d86e88d46 |  |  |  |
+| 2026-11-27 | security-boundary | Diff fallback: escape lang strings, check msg shape; no live injection existed | NONE | https://github.com/DreamLab-AI/vellum-markdown-editor/pull/11 | yes | ACCEPT |  | df8ed732357c |  |  |  |
