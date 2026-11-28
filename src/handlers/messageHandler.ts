@@ -53,7 +53,13 @@ export async function handleWebviewMessage(
           // Not a decodable path: uriToOpen stays unset and nothing is opened.
         }
       } else if (e.value) {
-        const href = decodeURIComponent(e.value);
+        let href = e.value;
+        try {
+          href = decodeURIComponent(e.value);
+        } catch {
+          // A bare '%' or a truncated percent escape is not decodable; keep
+          // the raw target so the link is still resolved by its literal name.
+        }
         if (
           href.startsWith('http://') ||
           href.startsWith('https://') ||
